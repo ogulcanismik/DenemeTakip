@@ -17,7 +17,6 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final exam = ref.watch(activeExamProvider);
     final entries = ref.watch(activeEntriesProvider);
-    final streak = ref.watch(streakProvider);
     final settings = ref.watch(settingsProvider);
     if (exam == null) return const SizedBox.shrink();
 
@@ -33,31 +32,6 @@ class DashboardScreen extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
         children: [
-          SurfaceCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$streak haftalık seri',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Üst üste deneme girilen haftalar. Boş geçen hafta seriyi sıfırlar.',
-                  style: TextStyle(color: AppColors.textMuted, height: 1.35),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  exam.penaltyLabel,
-                  style: const TextStyle(
-                    color: AppColors.emerald,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
           _TargetCard(
             target: target,
             onEdit: () => _editTarget(context, ref, exam.id, target),

@@ -25,10 +25,6 @@ class ExamType {
   final List<SectionDefinition> sections;
   final double defaultTargetNet;
 
-  String get penaltyLabel => penaltyDivisor == 0
-      ? 'Yanlış doğruyu götürmez'
-      : '$penaltyDivisor yanlış 1 doğruyu götürür';
-
   SectionDefinition? sectionById(String id) {
     for (final section in sections) {
       if (section.id == id) return section;

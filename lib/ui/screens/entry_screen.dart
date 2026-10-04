@@ -270,14 +270,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 children: [
-                  Text(
-                    exam.penaltyLabel,
-                    style: const TextStyle(
-                      color: AppColors.emerald,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   TextField(
                     controller: _title,
                     textInputAction: TextInputAction.next,

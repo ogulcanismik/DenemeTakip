@@ -149,14 +149,6 @@ class _ExamSelectTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      exam.penaltyLabel,
-                      style: const TextStyle(
-                        color: AppColors.emerald,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
                       subjects,
                       style: const TextStyle(
                         color: AppColors.textMuted,
