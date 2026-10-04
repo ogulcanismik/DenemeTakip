@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -59,10 +61,8 @@ class _CountFieldState extends State<CountField> {
       );
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      select();
-      WidgetsBinding.instance.addPostFrameCallback((_) => select());
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => select());
+    Timer(const Duration(milliseconds: 40), select);
   }
 
   @override

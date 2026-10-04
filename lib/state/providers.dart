@@ -52,7 +52,11 @@ class EntriesNotifier extends Notifier<List<DenemeEntry>> {
 
   Future<void> add(DenemeEntry entry) async {
     await ref.read(denemeRepositoryProvider).saveEntry(entry);
-    state = ref.read(denemeRepositoryProvider).loadEntries();
+    state = [
+      for (final existing in state)
+        if (existing.id != entry.id) existing,
+      entry,
+    ];
   }
 
   Future<void> delete(String id) async {

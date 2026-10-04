@@ -11,17 +11,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+class EntrySaveHandle extends ChangeNotifier {
+  String total = '—';
+  String? hint;
+  var saving = false;
+  VoidCallback? onSave;
+  var _disposed = false;
+
+  void publish({
+    required String total,
+    required String? hint,
+    required bool saving,
+    required VoidCallback onSave,
+  }) {
+    if (_disposed) return;
+    final changed =
+        this.total != total ||
+        this.hint != hint ||
+        this.saving != saving ||
+        this.onSave == null;
+    this.total = total;
+    this.hint = hint;
+    this.saving = saving;
+    this.onSave = onSave;
+    if (changed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+}
+
 class EntryScreen extends ConsumerStatefulWidget {
   const EntryScreen({
     super.key,
     required this.exam,
     required this.active,
     required this.onSaved,
+    required this.saveHandle,
   });
 
   final ExamType exam;
   final bool active;
   final VoidCallback onSaved;
+  final EntrySaveHandle saveHandle;
 
   @override
   ConsumerState<EntryScreen> createState() => _EntryScreenState();
@@ -37,6 +72,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   int? _difficulty;
   var _saving = false;
   var _didFocus = false;
+  String? _status;
 
   @override
   void initState() {
@@ -144,38 +180,60 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
 
   Future<void> _save() async {
     if (_saving) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     final result = _evaluate();
-    if (!result.isValid || !_durationValid) return;
+    if (!result.isValid || !_durationValid) {
+      final names = [
+        for (final issue in result.issues)
+          widget.exam.sectionById(issue.sectionId)?.name ?? issue.sectionId,
+      ];
+      setState(() {
+        _status = names.isEmpty
+            ? 'Süreyi düzelt veya boş bırak.'
+            : 'Düzelt: ${names.join(', ')}';
+      });
+      return;
+    }
 
-    setState(() => _saving = true);
     final title = _title.text.trim();
     final existing = ref
         .read(entriesProvider)
         .where((entry) => entry.examTypeId == widget.exam.id)
         .length;
-    final entry = DenemeEntry(
-      id: newEntryId(),
-      examTypeId: widget.exam.id,
-      title: title.isEmpty ? 'Deneme ${existing + 1}' : title,
-      date: _date,
-      durationMinutes: _durationValue(),
-      difficultyRating: _difficulty,
-      sections: [
-        for (final section in result.sections)
-          SectionScore(
-            sectionId: section.sectionId,
-            correctCount: section.correctCount,
-            incorrectCount: section.incorrectCount,
-            emptyCount: section.emptyCount,
-            calculatedNet: section.net,
-          ),
-      ],
-      totalNet: result.totalNet,
-    );
+    setState(() {
+      _saving = true;
+      _status = 'Kaydediliyor…';
+    });
     try {
-      await ref.read(entriesProvider.notifier).add(entry);
+      final entry = DenemeEntry(
+        id: newEntryId(),
+        examTypeId: widget.exam.id,
+        title: title.isEmpty ? 'Deneme ${existing + 1}' : title,
+        date: _date,
+        durationMinutes: _durationValue(),
+        difficultyRating: _difficulty,
+        sections: [
+          for (final section in result.sections)
+            SectionScore(
+              sectionId: section.sectionId,
+              correctCount: section.correctCount,
+              incorrectCount: section.incorrectCount,
+              emptyCount: section.emptyCount,
+              calculatedNet: section.net,
+            ),
+        ],
+        totalNet: result.totalNet,
+      );
+      await ref
+          .read(entriesProvider.notifier)
+          .add(entry)
+          .timeout(const Duration(seconds: 6));
       if (!mounted) return;
       widget.onSaved();
+    } on Object catch (error) {
+      if (mounted) {
+        setState(() => _status = 'Kayıt olmadı: $error');
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -185,6 +243,20 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   Widget build(BuildContext context) {
     final result = _evaluate();
     final exam = widget.exam;
+
+    final total = result.isValid ? formatNet(result.totalNet) : '—';
+    final hint = result.isValid ? _status : _footerHint(result);
+    if (widget.active) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.saveHandle.publish(
+          total: total,
+          hint: hint,
+          saving: _saving,
+          onSave: _save,
+        );
+      });
+    }
 
     return AppFrame(
       maxWidth: 760,
@@ -332,12 +404,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               ),
             ),
           ),
-          _SaveBar(
-            total: result.isValid ? formatNet(result.totalNet) : '—',
-            hint: _footerHint(result),
-            saving: _saving,
-            onSave: _save,
-          ),
         ],
       ),
     );
@@ -466,8 +532,9 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _SaveBar extends StatelessWidget {
-  const _SaveBar({
+class EntrySaveBar extends StatelessWidget {
+  const EntrySaveBar({
+    super.key,
     required this.total,
     required this.hint,
     required this.saving,
@@ -477,54 +544,44 @@ class _SaveBar extends StatelessWidget {
   final String total;
   final String? hint;
   final bool saving;
-  final VoidCallback onSave;
+  final VoidCallback? onSave;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.outline)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    return SurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  const Text(
-                    'Toplam net',
-                    style: TextStyle(fontSize: 16, color: AppColors.textMuted),
-                  ),
-                  const Spacer(),
-                  Text(
-                    total,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.emerald,
-                    ),
-                  ),
-                ],
+              const Text(
+                'Toplam net',
+                style: TextStyle(fontSize: 16, color: AppColors.textMuted),
               ),
-              if (hint != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  hint!,
-                  style: const TextStyle(color: AppColors.amber, height: 1.3),
+              const Spacer(),
+              Text(
+                total,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.emerald,
                 ),
-              ],
-              const SizedBox(height: 10),
-              FilledButton(
-                onPressed: saving ? null : onSave,
-                child: const Text('Denemeyi kaydet'),
               ),
             ],
           ),
-        ),
+          if (hint != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              hint!,
+              style: const TextStyle(color: AppColors.amber, height: 1.3),
+            ),
+          ],
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: saving ? null : onSave,
+            child: Text(saving ? 'Kaydediliyor…' : 'Denemeyi kaydet'),
+          ),
+        ],
       ),
     );
   }

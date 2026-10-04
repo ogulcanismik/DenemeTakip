@@ -91,7 +91,8 @@ String newEntryId() {
   final micros = DateTime.now().toUtc().microsecondsSinceEpoch.toRadixString(
     16,
   );
-  final salt = Random().nextInt(1 << 32).toRadixString(16);
+  // nextInt's max must stay inside 32-bit range. `1 << 32` is 0 on the web.
+  final salt = Random().nextInt(0x7fffffff).toRadixString(16);
   return '$micros$salt';
 }
 
