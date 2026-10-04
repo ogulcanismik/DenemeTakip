@@ -19,15 +19,39 @@ class SettingsNotifier extends Notifier<AppSettings> {
   @override
   AppSettings build() => ref.read(denemeRepositoryProvider).loadSettings();
 
-  Future<void> completeOnboarding(String examTypeId) async {
-    final next = state.copyWith(onboarded: true, activeExamTypeId: examTypeId);
+  Future<void> completeOnboarding(List<String> enabledExamTypeIds) async {
+    final enabled = _sanitizeEnabled(enabledExamTypeIds);
+    if (enabled.isEmpty) return;
+    final next = state.copyWith(
+      onboarded: true,
+      enabledExamTypeIds: enabled,
+      activeExamTypeId: enabled.first,
+    );
     await ref.read(denemeRepositoryProvider).saveSettings(next);
     state = next;
   }
 
   Future<void> setActiveExam(String examTypeId) async {
+    if (!state.isEnabled(examTypeId)) return;
     if (state.activeExamTypeId == examTypeId) return;
     final next = state.copyWith(activeExamTypeId: examTypeId);
+    await ref.read(denemeRepositoryProvider).saveSettings(next);
+    state = next;
+  }
+
+  Future<void> setEnabledExams(List<String> enabledExamTypeIds) async {
+    final enabled = _sanitizeEnabled(enabledExamTypeIds);
+    if (enabled.isEmpty) return;
+
+    var active = state.activeExamTypeId;
+    if (active == null || !enabled.contains(active)) {
+      active = enabled.first;
+    }
+
+    final next = state.copyWith(
+      enabledExamTypeIds: enabled,
+      activeExamTypeId: active,
+    );
     await ref.read(denemeRepositoryProvider).saveSettings(next);
     state = next;
   }
@@ -39,6 +63,17 @@ class SettingsNotifier extends Notifier<AppSettings> {
     final next = state.copyWith(targetNets: targets);
     await ref.read(denemeRepositoryProvider).saveSettings(next);
     state = next;
+  }
+
+  List<String> _sanitizeEnabled(Iterable<String> ids) {
+    final seen = <String>{};
+    final result = <String>[];
+    for (final id in ids) {
+      if (ExamRegistry.byId(id) == null) continue;
+      if (!seen.add(id)) continue;
+      result.add(id);
+    }
+    return result;
   }
 }
 
@@ -69,6 +104,11 @@ final activeExamProvider = Provider<ExamType?>((ref) {
   final id = ref.watch(settingsProvider).activeExamTypeId;
   if (id == null) return null;
   return ExamRegistry.byId(id);
+});
+
+final enabledExamsProvider = Provider<List<ExamType>>((ref) {
+  final settings = ref.watch(settingsProvider);
+  return ExamRegistry.enabledOf(settings.enabledExamTypeIds);
 });
 
 final activeEntriesProvider = Provider<List<DenemeEntry>>((ref) {

@@ -1,7 +1,7 @@
-import 'package:deneme_takip/domain/exam_registry.dart';
 import 'package:deneme_takip/state/providers.dart';
 import 'package:deneme_takip/ui/screens/dashboard_screen.dart';
 import 'package:deneme_takip/ui/screens/entry_screen.dart';
+import 'package:deneme_takip/ui/screens/exam_list_settings_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,7 +32,20 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Deneme Takip'),
-        actions: const [_ExamSwitcher()],
+        actions: [
+          const _ExamSwitcher(),
+          IconButton(
+            tooltip: 'Ayarlar',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const ExamListSettingsScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.settings_outlined),
+          ),
+        ],
         bottom: _tab == 1
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(188),
@@ -103,7 +116,8 @@ class _ExamSwitcher extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final active = ref.watch(activeExamProvider);
-    if (active == null) return const SizedBox.shrink();
+    final enabled = ref.watch(enabledExamsProvider);
+    if (active == null || enabled.isEmpty) return const SizedBox.shrink();
 
     return PopupMenuButton<String>(
       tooltip: 'Sınav değiştir',
@@ -112,7 +126,7 @@ class _ExamSwitcher extends ConsumerWidget {
       onSelected: (id) => ref.read(settingsProvider.notifier).setActiveExam(id),
       itemBuilder: (context) {
         return [
-          for (final exam in ExamRegistry.all)
+          for (final exam in enabled)
             PopupMenuItem<String>(
               value: exam.id,
               height: 68,
@@ -140,13 +154,20 @@ class _ExamSwitcher extends ConsumerWidget {
         ];
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              active.name,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 160),
+              child: Text(
+                active.name,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
             const Icon(Icons.keyboard_arrow_down),
           ],
