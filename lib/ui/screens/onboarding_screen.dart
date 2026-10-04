@@ -115,7 +115,6 @@ class _ExamSelectTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subjects = exam.sections.map((section) => section.name).join(' · ');
     return Material(
       color: selected
           ? AppColors.indigo.withValues(alpha: 0.18)
@@ -127,35 +126,18 @@ class _ExamSelectTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Icon(
-                  selected
-                      ? Icons.check_box_rounded
-                      : Icons.check_box_outline_blank_rounded,
-                  color: selected ? AppColors.indigo : AppColors.textMuted,
-                ),
+              Icon(
+                selected
+                    ? Icons.check_box_rounded
+                    : Icons.check_box_outline_blank_rounded,
+                color: selected ? AppColors.indigo : AppColors.textMuted,
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      exam.name,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subjects,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  exam.name,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
             ],
