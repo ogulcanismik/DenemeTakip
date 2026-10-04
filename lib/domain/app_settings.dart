@@ -4,22 +4,27 @@ class AppSettings {
   const AppSettings({
     required this.onboarded,
     required this.activeExamTypeId,
+    required this.enabledExamTypeIds,
     required this.targetNets,
   });
 
   final bool onboarded;
   final String? activeExamTypeId;
+  final List<String> enabledExamTypeIds;
   final Map<String, double> targetNets;
 
   static AppSettings defaults() {
     return AppSettings(
       onboarded: false,
       activeExamTypeId: null,
+      enabledExamTypeIds: const [],
       targetNets: {
         for (final exam in ExamRegistry.all) exam.id: exam.defaultTargetNet,
       },
     );
   }
+
+  bool isEnabled(String examTypeId) => enabledExamTypeIds.contains(examTypeId);
 
   double targetFor(String examTypeId) {
     return targetNets[examTypeId] ??
@@ -30,11 +35,16 @@ class AppSettings {
   AppSettings copyWith({
     bool? onboarded,
     String? activeExamTypeId,
+    List<String>? enabledExamTypeIds,
     Map<String, double>? targetNets,
+    bool clearActiveExam = false,
   }) {
     return AppSettings(
       onboarded: onboarded ?? this.onboarded,
-      activeExamTypeId: activeExamTypeId ?? this.activeExamTypeId,
+      activeExamTypeId: clearActiveExam
+          ? null
+          : (activeExamTypeId ?? this.activeExamTypeId),
+      enabledExamTypeIds: enabledExamTypeIds ?? this.enabledExamTypeIds,
       targetNets: targetNets ?? this.targetNets,
     );
   }
@@ -42,6 +52,7 @@ class AppSettings {
   Map<String, dynamic> toJson() => {
     'onboarded': onboarded,
     'activeExamTypeId': activeExamTypeId,
+    'enabledExamTypeIds': enabledExamTypeIds,
     'targets': targetNets,
   };
 
@@ -56,12 +67,24 @@ class AppSettings {
         }
       }
     }
+
+    final enabled = <String>[];
+    final rawEnabled = json['enabledExamTypeIds'];
+    if (rawEnabled is List) {
+      for (final item in rawEnabled) {
+        if (item is String && item.isNotEmpty && !enabled.contains(item)) {
+          enabled.add(item);
+        }
+      }
+    }
+
     final rawExam = json['activeExamTypeId'];
+    final active = rawExam is String && rawExam.isNotEmpty ? rawExam : null;
+
     return AppSettings(
       onboarded: json['onboarded'] == true,
-      activeExamTypeId: rawExam is String && rawExam.isNotEmpty
-          ? rawExam
-          : null,
+      activeExamTypeId: active,
+      enabledExamTypeIds: enabled,
       targetNets: targets,
     );
   }

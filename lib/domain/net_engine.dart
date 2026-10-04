@@ -61,7 +61,8 @@ class NetResult {
 }
 
 abstract final class NetEngine {
-  /// Net = correct - (incorrect / penaltyDivisor).
+  /// Net = correct when [ExamType.penaltyDivisor] is 0 (no wrong penalty).
+  /// Otherwise net = correct - (incorrect / penaltyDivisor).
   /// Empty = questionCount - correct - incorrect.
   /// Invalid sections are omitted. The total is the raw sum of valid nets.
   static NetResult evaluate(ExamType exam, Map<String, SectionCounts> counts) {
@@ -96,7 +97,9 @@ abstract final class NetEngine {
 
       final emptyCount =
           definition.questionCount - correctCount - incorrectCount;
-      final net = correctCount - (incorrectCount / exam.penaltyDivisor);
+      final net = exam.penaltyDivisor == 0
+          ? correctCount.toDouble()
+          : correctCount - (incorrectCount / exam.penaltyDivisor);
       total += net;
       sections.add(
         ComputedSection(
