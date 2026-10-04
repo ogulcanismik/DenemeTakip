@@ -129,26 +129,12 @@ class _ExamSwitcher extends ConsumerWidget {
           for (final exam in enabled)
             PopupMenuItem<String>(
               value: exam.id,
-              height: 68,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    exam.name,
-                    style: const TextStyle(
-                      color: AppColors.text,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    exam.penaltyLabel,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+              child: Text(
+                exam.name,
+                style: const TextStyle(
+                  color: AppColors.text,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
         ];

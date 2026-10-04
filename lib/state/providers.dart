@@ -3,8 +3,6 @@ import 'package:deneme_takip/domain/app_settings.dart';
 import 'package:deneme_takip/domain/deneme_entry.dart';
 import 'package:deneme_takip/domain/exam_registry.dart';
 import 'package:deneme_takip/domain/exam_type.dart';
-import 'package:deneme_takip/domain/istanbul_time.dart';
-import 'package:deneme_takip/domain/streak.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final denemeRepositoryProvider = Provider<DenemeRepository>((ref) {
@@ -124,11 +122,4 @@ final activeEntriesProvider = Provider<List<DenemeEntry>>((ref) {
     return b.id.compareTo(a.id);
   });
   return filtered;
-});
-
-final streakProvider = Provider<int>((ref) {
-  final entries = ref.watch(activeEntriesProvider);
-  return weeklyStreak([
-    for (final entry in entries) entry.date,
-  ], today: istanbulToday());
 });
