@@ -7,7 +7,7 @@ import 'package:deneme_takip/ui/widgets/net_charts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// null = Tümü (toplam net), otherwise a section id.
+/// Page 0 = Tümü (toplam net); pages 1..n = exam.sections[i].
 class AnalysisScreen extends ConsumerStatefulWidget {
   const AnalysisScreen({super.key});
 
@@ -16,7 +16,28 @@ class AnalysisScreen extends ConsumerStatefulWidget {
 }
 
 class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
-  String? _sectionId;
+  late final PageController _pageController;
+  int _pageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _goToPage(int page) {
+    if (_pageIndex == page) return;
+    setState(() => _pageIndex = page);
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(page);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +46,11 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
     final settings = ref.watch(settingsProvider);
     if (exam == null) return const SizedBox.shrink();
 
-    // Reset subject filter if exam sections changed / id no longer valid.
-    if (_sectionId != null && exam.sectionById(_sectionId!) == null) {
+    final pageCount = 1 + exam.sections.length;
+    if (_pageIndex >= pageCount) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _sectionId = null);
+        if (!mounted) return;
+        _goToPage(0);
       });
     }
 
@@ -39,128 +61,156 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
         return a.id.compareTo(b.id);
       });
 
-    final values = [
-      for (final entry in oldestFirst) _netFor(entry, _sectionId),
-    ];
-    final metrics = _AnalysisMetrics.from(values);
-    final wrongLoss = _wrongNetLoss(exam, oldestFirst, _sectionId);
-    final target = _sectionId == null ? settings.targetFor(exam.id) : null;
-    final sectionIndex = _sectionId == null
-        ? -1
-        : exam.sections.indexWhere((s) => s.id == _sectionId);
-    final lineColor = sectionIndex < 0
-        ? AppColors.emerald
-        : sectionColor(sectionIndex);
-    final chartTitle = _sectionId == null
-        ? 'Toplam net trendi'
-        : '${exam.sectionById(_sectionId!)?.name ?? 'Ders'} net trendi';
-
     return AppFrame(
-      child: CustomScrollView(
-        slivers: [
-          SliverPadding(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-            sliver: SliverToBoxAdapter(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  FilterChip(
+                    label: const Text('Tümü'),
+                    selected: _pageIndex == 0,
+                    onSelected: (_) => _goToPage(0),
+                  ),
+                  for (var i = 0; i < exam.sections.length; i++) ...[
+                    const SizedBox(width: 8),
                     FilterChip(
-                      label: const Text('Tümü'),
-                      selected: _sectionId == null,
-                      onSelected: (_) => setState(() => _sectionId = null),
+                      label: Text(exam.sections[i].name),
+                      selected: _pageIndex == i + 1,
+                      onSelected: (_) => _goToPage(i + 1),
                     ),
-                    for (final section in exam.sections) ...[
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: Text(section.name),
-                        selected: _sectionId == section.id,
-                        onSelected: (_) =>
-                            setState(() => _sectionId = section.id),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
           ),
-          if (oldestFirst.isEmpty)
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-              sliver: SliverToBoxAdapter(
-                child: SurfaceCard(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Analiz için deneme yok',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'En az bir deneme kaydedince net özeti, trend ve yanlış maliyeti burada görünür.',
-                        style: TextStyle(
-                          color: AppColors.textMuted,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          else ...[
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: _MetricsRow(metrics: metrics),
-              ),
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: pageCount,
+              onPageChanged: (index) {
+                if (_pageIndex == index) return;
+                setState(() => _pageIndex = index);
+              },
+              itemBuilder: (context, page) {
+                final sectionId =
+                    page == 0 ? null : exam.sections[page - 1].id;
+                return _AnalysisPage(
+                  exam: exam,
+                  oldestFirst: oldestFirst,
+                  sectionId: sectionId,
+                  sectionIndex: page - 1,
+                  target: sectionId == null
+                      ? settings.targetFor(exam.id)
+                      : null,
+                );
+              },
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: SurfaceCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        chartTitle,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Eskiden yeniye',
-                        style: TextStyle(color: AppColors.textMuted),
-                      ),
-                      const SizedBox(height: 12),
-                      NetTrendChart(
-                        entries: oldestFirst,
-                        values: values,
-                        lineColor: lineColor,
-                        target: target,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-              sliver: SliverToBoxAdapter(
-                child: _WrongCostCard(
-                  loss: wrongLoss,
-                  noPenalty: exam.penaltyDivisor == 0,
-                ),
-              ),
-            ),
-          ],
+          ),
         ],
       ),
     );
   }
+}
 
-  double _netFor(DenemeEntry entry, String? sectionId) {
+class _AnalysisPage extends StatelessWidget {
+  const _AnalysisPage({
+    required this.exam,
+    required this.oldestFirst,
+    required this.sectionId,
+    required this.sectionIndex,
+    required this.target,
+  });
+
+  final ExamType exam;
+  final List<DenemeEntry> oldestFirst;
+  final String? sectionId;
+  final int sectionIndex;
+  final double? target;
+
+  @override
+  Widget build(BuildContext context) {
+    if (oldestFirst.isEmpty) {
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        children: [
+          SurfaceCard(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Analiz için deneme yok',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'En az bir deneme kaydedince net özeti, trend ve yanlış maliyeti burada görünür.',
+                  style: TextStyle(
+                    color: AppColors.textMuted,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    final values = [
+      for (final entry in oldestFirst) _netFor(entry, sectionId),
+    ];
+    final metrics = _AnalysisMetrics.from(values);
+    final wrongLoss = _wrongNetLoss(exam, oldestFirst, sectionId);
+    final lineColor =
+        sectionIndex < 0 ? AppColors.emerald : sectionColor(sectionIndex);
+    final chartTitle = sectionId == null
+        ? 'Toplam net trendi'
+        : '${exam.sectionById(sectionId!)?.name ?? 'Ders'} net trendi';
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      children: [
+        _MetricsRow(metrics: metrics),
+        const SizedBox(height: 12),
+        SurfaceCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                chartTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Eskiden yeniye',
+                style: TextStyle(color: AppColors.textMuted),
+              ),
+              const SizedBox(height: 12),
+              NetTrendChart(
+                entries: oldestFirst,
+                values: values,
+                lineColor: lineColor,
+                target: target,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        _WrongCostCard(
+          loss: wrongLoss,
+          noPenalty: exam.penaltyDivisor == 0,
+        ),
+      ],
+    );
+  }
+
+  static double _netFor(DenemeEntry entry, String? sectionId) {
     if (sectionId == null) return entry.totalNet;
     for (final section in entry.sections) {
       if (section.sectionId == sectionId) return section.calculatedNet;
@@ -169,7 +219,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
   }
 
   /// Nets lost to wrong answers: sum(incorrect) / penaltyDivisor (0 → 0).
-  double _wrongNetLoss(
+  static double _wrongNetLoss(
     ExamType exam,
     List<DenemeEntry> entries,
     String? sectionId,
