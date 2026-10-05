@@ -198,6 +198,20 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       maxWidth: 760,
       child: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.shellBodyHorizontal,
+              4,
+              AppSpacing.shellBodyHorizontal,
+              0,
+            ),
+            child: EntrySaveBar(
+              total: total,
+              hint: hint,
+              saving: _saving,
+              onSave: _save,
+            ),
+          ),
           Expanded(
             child: FocusTraversalGroup(
               policy: OrderedTraversalPolicy(),
@@ -206,18 +220,11 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.shellBodyHorizontal,
-                  4,
+                  12,
                   AppSpacing.shellBodyHorizontal,
                   24,
                 ),
                 children: [
-                  EntrySaveBar(
-                    total: total,
-                    hint: hint,
-                    saving: _saving,
-                    onSave: _save,
-                  ),
-                  const SizedBox(height: 12),
                   TextField(
                     controller: _title,
                     textInputAction: TextInputAction.next,
