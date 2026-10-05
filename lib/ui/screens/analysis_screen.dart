@@ -94,7 +94,12 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.shellBodyHorizontal,
+              AppSpacing.shellBodyTop,
+              AppSpacing.shellBodyHorizontal,
+              0,
+            ),
             child: SingleChildScrollView(
               controller: _chipScrollController,
               scrollDirection: Axis.horizontal,
@@ -175,7 +180,12 @@ class _AnalysisPage extends StatelessWidget {
       return CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.shellBodyHorizontal,
+              AppSpacing.shellBodyTop,
+              AppSpacing.shellBodyHorizontal,
+              28,
+            ),
             sliver: SliverToBoxAdapter(
               child: SurfaceCard(
                 padding: const EdgeInsets.all(24),
@@ -265,7 +275,12 @@ class _AnalysisPage extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.shellBodyHorizontal,
+            AppSpacing.shellBodyTop,
+            AppSpacing.shellBodyHorizontal,
+            28,
+          ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               if (sparse) ...[

@@ -252,7 +252,12 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               child: ListView(
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.shellBodyHorizontal,
+                  AppSpacing.shellBodyTop,
+                  AppSpacing.shellBodyHorizontal,
+                  24,
+                ),
                 children: [
                   TextField(
                     controller: _title,

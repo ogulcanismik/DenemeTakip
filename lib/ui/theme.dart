@@ -164,6 +164,13 @@ ThemeData buildDenemeTheme() {
   );
 }
 
+/// Shared layout metrics for shell tabs (Özet / Analiz / Deneme Gir).
+abstract final class AppSpacing {
+  /// Inset under the app bar before the first body content on every tab.
+  static const double shellBodyTop = 4;
+  static const double shellBodyHorizontal = 20;
+}
+
 class AppFrame extends StatelessWidget {
   const AppFrame({super.key, required this.child, this.maxWidth = 880});
 

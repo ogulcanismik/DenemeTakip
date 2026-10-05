@@ -55,7 +55,12 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                   listenable: _saveHandle,
                   builder: (context, _) {
                     return Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                      padding: const EdgeInsets.fromLTRB(
+                        16,
+                        AppSpacing.shellBodyTop,
+                        16,
+                        12,
+                      ),
                       child: Align(
                         alignment: Alignment.topCenter,
                         child: ConstrainedBox(

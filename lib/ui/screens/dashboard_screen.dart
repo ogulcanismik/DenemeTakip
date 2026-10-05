@@ -31,7 +31,12 @@ class DashboardScreen extends ConsumerWidget {
 
     return AppFrame(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.shellBodyHorizontal,
+          AppSpacing.shellBodyTop,
+          AppSpacing.shellBodyHorizontal,
+          28,
+        ),
         children: [
           _TargetCard(
             target: target,
