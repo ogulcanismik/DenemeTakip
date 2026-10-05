@@ -324,3 +324,151 @@ class SectionNetChart extends StatelessWidget {
     return 0;
   }
 }
+
+/// Line chart of one series (total or a single subject) over exams oldest→newest.
+class NetTrendChart extends StatelessWidget {
+  const NetTrendChart({
+    super.key,
+    required this.entries,
+    required this.values,
+    this.lineColor = AppColors.emerald,
+    this.target,
+  });
+
+  final List<DenemeEntry> entries;
+  final List<double> values;
+  final Color lineColor;
+  final double? target;
+
+  @override
+  Widget build(BuildContext context) {
+    if (entries.isEmpty || values.length != entries.length) {
+      return const SizedBox.shrink();
+    }
+
+    var maxValue = target ?? values.first;
+    var minValue = 0.0;
+    for (final value in values) {
+      if (value > maxValue) maxValue = value;
+      if (value < minValue) minValue = value;
+    }
+    if (target != null && target! > maxValue) maxValue = target!;
+    final span = (maxValue - minValue).abs();
+    final maxY = maxValue + span * 0.18 + 4;
+    final minY = minValue < 0 ? minValue - span * 0.08 - 2 : 0.0;
+
+    return SizedBox(
+      height: 240,
+      child: LineChart(
+        LineChartData(
+          minX: 0,
+          maxX: entries.length + 1,
+          minY: minY,
+          maxY: maxY,
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: AppColors.outline.withValues(alpha: 0.45),
+              strokeWidth: 1,
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          extraLinesData: target == null
+              ? null
+              : ExtraLinesData(
+                  horizontalLines: [
+                    HorizontalLine(
+                      y: target!,
+                      color: AppColors.indigo,
+                      strokeWidth: 1.6,
+                      dashArray: const [6, 4],
+                      label: HorizontalLineLabel(
+                        show: true,
+                        alignment: Alignment.bottomRight,
+                        padding: const EdgeInsets.only(right: 6, bottom: 4),
+                        style: const TextStyle(
+                          color: AppColors.indigo,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        labelResolver: (line) => 'Hedef ${formatNet(line.y)}',
+                      ),
+                    ),
+                  ],
+                ),
+          titlesData: FlTitlesData(
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 42,
+                getTitlesWidget: _leftAxisTitle,
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                reservedSize: 32,
+                getTitlesWidget: (value, meta) {
+                  final index = value.round() - 1;
+                  if ((value - value.round()).abs() > 0.01 ||
+                      index < 0 ||
+                      index >= entries.length) {
+                    return const SizedBox.shrink();
+                  }
+                  return SideTitleWidget(
+                    meta: meta,
+                    child: Text(
+                      formatShortDate(entries[index].date),
+                      style: _axisStyle,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (spot) => AppColors.surfaceHigh,
+              getTooltipItems: (spots) {
+                return [
+                  for (final spot in spots)
+                    LineTooltipItem(
+                      formatNet(spot.y),
+                      const TextStyle(
+                        color: AppColors.text,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                ];
+              },
+            ),
+          ),
+          lineBarsData: [
+            LineChartBarData(
+              spots: [
+                for (var i = 0; i < values.length; i++)
+                  FlSpot((i + 1).toDouble(), values[i]),
+              ],
+              color: lineColor,
+              barWidth: 3,
+              isStrokeCapRound: true,
+              dotData: const FlDotData(show: true),
+              belowBarData: BarAreaData(
+                show: true,
+                color: lineColor.withValues(alpha: 0.14),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

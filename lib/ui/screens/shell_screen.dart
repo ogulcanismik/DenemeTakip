@@ -1,4 +1,5 @@
 import 'package:deneme_takip/state/providers.dart';
+import 'package:deneme_takip/ui/screens/analysis_screen.dart';
 import 'package:deneme_takip/ui/screens/dashboard_screen.dart';
 import 'package:deneme_takip/ui/screens/entry_screen.dart';
 import 'package:deneme_takip/ui/screens/exam_list_settings_screen.dart';
@@ -14,7 +15,8 @@ class ShellScreen extends ConsumerStatefulWidget {
 }
 
 class _ShellScreenState extends ConsumerState<ShellScreen> {
-  int _tab = 1;
+  /// 0 Özet, 1 Analiz, 2 Deneme Gir
+  int _tab = 2;
   int _formToken = 0;
   final _saveHandle = EntrySaveHandle();
 
@@ -46,7 +48,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
             icon: const Icon(Icons.settings_outlined),
           ),
         ],
-        bottom: _tab == 1
+        bottom: _tab == 2
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(188),
                 child: ListenableBuilder(
@@ -76,11 +78,12 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
         index: _tab,
         sizing: StackFit.expand,
         children: [
-          DashboardScreen(onEnterDeneme: () => setState(() => _tab = 1)),
+          DashboardScreen(onEnterDeneme: () => setState(() => _tab = 2)),
+          const AnalysisScreen(),
           EntryScreen(
             key: ValueKey('${exam.id}:$_formToken'),
             exam: exam,
-            active: _tab == 1,
+            active: _tab == 2,
             saveHandle: _saveHandle,
             onSaved: () => setState(() {
               _tab = 0;
@@ -100,9 +103,14 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
             label: 'Özet',
           ),
           NavigationDestination(
+            icon: Icon(Icons.analytics_outlined),
+            selectedIcon: Icon(Icons.analytics),
+            label: 'Analiz',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.edit_note_outlined),
             selectedIcon: Icon(Icons.edit_note),
-            label: 'Deneme gir',
+            label: 'Deneme Gir',
           ),
         ],
       ),
