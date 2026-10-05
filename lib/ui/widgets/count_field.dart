@@ -74,11 +74,11 @@ class _CountFieldState extends State<CountField> {
           widget.label,
           style: const TextStyle(
             color: AppColors.textMuted,
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Row(
           children: [
             _StepButton(
@@ -86,7 +86,7 @@ class _CountFieldState extends State<CountField> {
               icon: Icons.remove,
               onPressed: () => widget.onStep(-1),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Expanded(
               child: FocusTraversalOrder(
                 order: NumericFocusOrder(widget.order),
@@ -102,9 +102,10 @@ class _CountFieldState extends State<CountField> {
                   enableSuggestions: false,
                   autocorrect: false,
                   style: const TextStyle(
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: AppColors.text,
+                    height: 1.2,
                   ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\-]')),
@@ -112,8 +113,8 @@ class _CountFieldState extends State<CountField> {
                   decoration: const InputDecoration(
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 14,
+                      horizontal: 6,
+                      vertical: 8,
                     ),
                   ),
                   onTap: _selectAll,
@@ -121,7 +122,7 @@ class _CountFieldState extends State<CountField> {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             _StepButton(
               tooltip: '${widget.label} artır',
               icon: Icons.add,
@@ -150,13 +151,15 @@ class _StepButton extends StatelessWidget {
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
-      icon: Icon(icon),
+      icon: Icon(icon, size: 20),
       style: IconButton.styleFrom(
         backgroundColor: AppColors.surfaceHigh,
         foregroundColor: AppColors.text,
-        minimumSize: const Size(48, 48),
-        fixedSize: const Size(48, 48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        minimumSize: const Size(40, 40),
+        fixedSize: const Size(40, 40),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

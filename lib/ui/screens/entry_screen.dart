@@ -314,7 +314,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                       onStepCorrect: (delta) => _step(i, true, delta),
                       onStepIncorrect: (delta) => _step(i, false, delta),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                   ],
                   Theme(
                     data: Theme.of(context)
@@ -448,6 +448,7 @@ class _SectionCard extends StatelessWidget {
     );
 
     return SurfaceCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -457,42 +458,45 @@ class _SectionCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   definition.name,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 16,
+                        height: 1.2,
+                      ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Text(
                 'Net $net',
                 style: const TextStyle(
                   color: AppColors.emerald,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             '${definition.questionCount} soru · Boş $empty',
-            style: const TextStyle(color: AppColors.textMuted),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           if (wide)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: correctField),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(child: incorrectField),
               ],
             )
           else ...[
             correctField,
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             incorrectField,
           ],
           if (issue != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               _issueText(issue!, definition.questionCount),
               style: const TextStyle(color: AppColors.amber, height: 1.3),
@@ -530,6 +534,7 @@ class EntrySaveBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SurfaceCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -537,13 +542,13 @@ class EntrySaveBar extends StatelessWidget {
             children: [
               const Text(
                 'Toplam net',
-                style: TextStyle(fontSize: 16, color: AppColors.textMuted),
+                style: TextStyle(fontSize: 14, color: AppColors.textMuted),
               ),
               const Spacer(),
               Text(
                 total,
                 style: const TextStyle(
-                  fontSize: 28,
+                  fontSize: 24,
                   fontWeight: FontWeight.w700,
                   color: AppColors.emerald,
                 ),
@@ -551,13 +556,13 @@ class EntrySaveBar extends StatelessWidget {
             ],
           ),
           if (hint != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               hint!,
               style: const TextStyle(color: AppColors.amber, height: 1.3),
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           FilledButton(
             onPressed: saving ? null : onSave,
             child: Text(saving ? 'Kaydediliyor…' : 'Denemeyi kaydet'),
