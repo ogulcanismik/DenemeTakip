@@ -71,7 +71,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   DateTime _date = istanbulToday();
   int? _difficulty;
   var _saving = false;
-  var _didFocus = false;
   String? _status;
 
   @override
@@ -90,21 +89,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     for (final controller in [..._correct, ..._incorrect, _duration]) {
       controller.addListener(_rebuild);
     }
-    _focusIfNeeded();
-  }
-
-  @override
-  void didUpdateWidget(EntryScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _focusIfNeeded();
-  }
-
-  void _focusIfNeeded() {
-    if (_didFocus || !widget.active || _focus.isEmpty) return;
-    _didFocus = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focus.first.requestFocus();
-    });
   }
 
   void _rebuild() {
