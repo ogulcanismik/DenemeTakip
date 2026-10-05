@@ -18,13 +18,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   /// 0 Özet, 1 Analiz, 2 Deneme Gir
   int _tab = 2;
   int _formToken = 0;
-  final _saveHandle = EntrySaveHandle();
-
-  @override
-  void dispose() {
-    _saveHandle.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,36 +41,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
             icon: const Icon(Icons.settings_outlined),
           ),
         ],
-        bottom: _tab == 2
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(188),
-                child: ListenableBuilder(
-                  listenable: _saveHandle,
-                  builder: (context, _) {
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        16,
-                        0,
-                        16,
-                        12,
-                      ),
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 760),
-                          child: EntrySaveBar(
-                            total: _saveHandle.total,
-                            hint: _saveHandle.hint,
-                            saving: _saveHandle.saving,
-                            onSave: _saveHandle.onSave,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              )
-            : null,
       ),
       body: IndexedStack(
         index: _tab,
@@ -89,7 +52,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
             key: ValueKey('${exam.id}:$_formToken'),
             exam: exam,
             active: _tab == 2,
-            saveHandle: _saveHandle,
             onSaved: () => setState(() {
               _tab = 0;
               _formToken += 1;

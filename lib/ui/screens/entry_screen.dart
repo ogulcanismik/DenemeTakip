@@ -11,52 +11,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class EntrySaveHandle extends ChangeNotifier {
-  String total = '—';
-  String? hint;
-  var saving = false;
-  VoidCallback? onSave;
-  var _disposed = false;
-
-  void publish({
-    required String total,
-    required String? hint,
-    required bool saving,
-    required VoidCallback onSave,
-  }) {
-    if (_disposed) return;
-    final changed =
-        this.total != total ||
-        this.hint != hint ||
-        this.saving != saving ||
-        this.onSave == null;
-    this.total = total;
-    this.hint = hint;
-    this.saving = saving;
-    this.onSave = onSave;
-    if (changed) notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-}
-
 class EntryScreen extends ConsumerStatefulWidget {
   const EntryScreen({
     super.key,
     required this.exam,
     required this.active,
     required this.onSaved,
-    required this.saveHandle,
   });
 
   final ExamType exam;
   final bool active;
   final VoidCallback onSaved;
-  final EntrySaveHandle saveHandle;
 
   @override
   ConsumerState<EntryScreen> createState() => _EntryScreenState();
@@ -230,17 +195,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
 
     final total = result.isValid ? formatNet(result.totalNet) : '—';
     final hint = result.isValid ? _status : _footerHint(result);
-    if (widget.active) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        widget.saveHandle.publish(
-          total: total,
-          hint: hint,
-          saving: _saving,
-          onSave: _save,
-        );
-      });
-    }
 
     return AppFrame(
       maxWidth: 760,
@@ -254,11 +208,18 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.shellBodyHorizontal,
-                  AppSpacing.shellBodyTop,
+                  4,
                   AppSpacing.shellBodyHorizontal,
                   24,
                 ),
                 children: [
+                  EntrySaveBar(
+                    total: total,
+                    hint: hint,
+                    saving: _saving,
+                    onSave: _save,
+                  ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: _title,
                     textInputAction: TextInputAction.next,
