@@ -98,7 +98,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
               AppSpacing.shellBodyHorizontal,
               AppSpacing.shellBodyTop,
               AppSpacing.shellBodyHorizontal,
-              0,
+              12,
             ),
             child: SingleChildScrollView(
               controller: _chipScrollController,
@@ -182,7 +182,7 @@ class _AnalysisPage extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.shellBodyHorizontal,
-              AppSpacing.shellBodyTop,
+              0,
               AppSpacing.shellBodyHorizontal,
               28,
             ),
@@ -277,7 +277,7 @@ class _AnalysisPage extends StatelessWidget {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.shellBodyHorizontal,
-            AppSpacing.shellBodyTop,
+            0,
             AppSpacing.shellBodyHorizontal,
             28,
           ),

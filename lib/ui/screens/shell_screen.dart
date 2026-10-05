@@ -57,7 +57,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                     return Padding(
                       padding: const EdgeInsets.fromLTRB(
                         16,
-                        AppSpacing.shellBodyTop,
+                        0,
                         16,
                         12,
                       ),
