@@ -333,6 +333,7 @@ class NetTrendChart extends StatelessWidget {
     required this.values,
     this.lineColor = AppColors.emerald,
     this.target,
+    this.trendValues,
   });
 
   final List<DenemeEntry> entries;
@@ -340,17 +341,29 @@ class NetTrendChart extends StatelessWidget {
   final Color lineColor;
   final double? target;
 
+  /// Optional smoothed overlay (e.g. 3–5 exam moving average), same length.
+  final List<double>? trendValues;
+
   @override
   Widget build(BuildContext context) {
     if (entries.isEmpty || values.length != entries.length) {
       return const SizedBox.shrink();
     }
+    final trend = trendValues;
+    final hasTrend =
+        trend != null && trend.length == values.length && trend.isNotEmpty;
 
     var maxValue = target ?? values.first;
     var minValue = 0.0;
     for (final value in values) {
       if (value > maxValue) maxValue = value;
       if (value < minValue) minValue = value;
+    }
+    if (hasTrend) {
+      for (final value in trend) {
+        if (value > maxValue) maxValue = value;
+        if (value < minValue) minValue = value;
+      }
     }
     if (target != null && target! > maxValue) maxValue = target!;
     final span = (maxValue - minValue).abs();
@@ -452,6 +465,20 @@ class NetTrendChart extends StatelessWidget {
             ),
           ),
           lineBarsData: [
+            if (hasTrend)
+              LineChartBarData(
+                spots: [
+                  for (var i = 0; i < trend.length; i++)
+                    FlSpot((i + 1).toDouble(), trend[i]),
+                ],
+                color: lineColor.withValues(alpha: 0.35),
+                barWidth: 3.5,
+                isStrokeCapRound: true,
+                isCurved: true,
+                curveSmoothness: 0.28,
+                dotData: const FlDotData(show: false),
+                belowBarData: BarAreaData(show: false),
+              ),
             LineChartBarData(
               spots: [
                 for (var i = 0; i < values.length; i++)

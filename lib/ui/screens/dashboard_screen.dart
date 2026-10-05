@@ -27,6 +27,7 @@ class DashboardScreen extends ConsumerWidget {
         if (byDate != 0) return byDate;
         return a.id.compareTo(b.id);
       });
+    final recent = entries.length <= 3 ? entries : entries.sublist(0, 3);
 
     return AppFrame(
       child: ListView(
@@ -58,36 +59,17 @@ class DashboardScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-            SurfaceCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Ders netleri',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Son 5 deneme',
-                    style: TextStyle(color: AppColors.textMuted),
-                  ),
-                  const SizedBox(height: 12),
-                  SectionNetChart(exam: exam, entries: oldestFirst),
-                ],
-              ),
-            ),
             const SizedBox(height: 20),
-            Text('Geçmiş', style: Theme.of(context).textTheme.titleMedium),
+            Text('Son denemeler', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             SurfaceCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
-                  for (var i = 0; i < entries.length; i++) ...[
+                  for (var i = 0; i < recent.length; i++) ...[
                     if (i > 0)
                       const Divider(height: 1, color: AppColors.outline),
-                    _HistoryTile(entry: entries[i]),
+                    _HistoryTile(entry: recent[i]),
                   ],
                 ],
               ),
