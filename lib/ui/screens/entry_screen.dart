@@ -15,12 +15,10 @@ class EntryScreen extends ConsumerStatefulWidget {
   const EntryScreen({
     super.key,
     required this.exam,
-    required this.active,
     required this.onSaved,
   });
 
   final ExamType exam;
-  final bool active;
   final VoidCallback onSaved;
 
   @override

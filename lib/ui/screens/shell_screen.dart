@@ -51,7 +51,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
           EntryScreen(
             key: ValueKey('${exam.id}:$_formToken'),
             exam: exam,
-            active: _tab == 2,
             onSaved: () => setState(() {
               _tab = 0;
               _formToken += 1;
