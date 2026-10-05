@@ -585,39 +585,101 @@ class _TacticsCard extends StatelessWidget {
   final double? accuracyRate;
   final double? attemptRate;
 
+  static const _accuracyBar = Color(0xFF22C55E);
+  static const _attemptBar = Color(0xFF818CF8);
+
   @override
   Widget build(BuildContext context) {
-    final hitPer10 = accuracyRate == null
-        ? null
-        : (accuracyRate! / 10).clamp(0, 10).round();
-
     return SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Taktik & İsabet',
+            'Deneme Stratejin',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 14),
           _ProgressRow(
-            label: 'İsabet Oranı',
+            label: 'Doğruluk Oranı',
             percent: accuracyRate,
-            micro: hitPer10 == null
-                ? 'Henüz işaretlenen soru yok.'
-                : "İşaretlediğin her 10 sorunun $hitPer10'i doğru.",
+            barColor: _accuracyBar,
+            micro: _accuracyMicro(accuracyRate),
           ),
           const SizedBox(height: 16),
           _ProgressRow(
-            label: 'Çözülen Soru Oranı',
+            label: 'Cevaplama Oranı',
             percent: attemptRate,
-            micro: attemptRate == null
-                ? 'Soru sayısı tanımsız.'
-                : "Soruların %${attemptRate!.round()}'ine temas edildi.",
+            barColor: _attemptBar,
+            micro: _attemptMicro(attemptRate),
           ),
         ],
       ),
     );
+  }
+
+  static String _accuracyMicro(double? accuracy) {
+    if (accuracy == null) return 'Henüz işaretlenen soru yok.';
+    if (accuracy >= 90) {
+      return 'Neredeyse hiç fire vermiyorsun, işaretlediğin sorular çok '
+          'sağlam geliyor.';
+    }
+    if (accuracy >= 70) {
+      final per10 = (accuracy / 10).clamp(0, 10).round();
+      return 'İşaretlediğin her 10 sorudan yaklaşık '
+          '${_turkishAccusativePer10(per10)} doğru.';
+    }
+    return 'Hata payın biraz yüksek; emin olmadığın soruları boş bırakmak '
+        'formunu yükseltebilir.';
+  }
+
+  static String _attemptMicro(double? attempt) {
+    if (attempt == null) return 'Soru sayısı tanımsız.';
+    if (attempt >= 85) {
+      return 'Soruların büyük kısmına ulaştın, boş soru sayın oldukça az.';
+    }
+    if (attempt >= 60) {
+      final per10 = (attempt / 10).clamp(0, 10).round();
+      return 'Her 10 sorudan ${_turkishDativePer10(per10)} cevap verdin; '
+          'kalanlar için süre dengesini gözetebilirsin.';
+    }
+    return 'Soruların önemli bir kısmı boş kalmış; süre yönetimi veya soru '
+        'eleme hızına odaklanabilirsin.';
+  }
+
+  /// Accusative for 0–10 (e.g. 8'i, 9'u) — avoids awkward "10'i".
+  static String _turkishAccusativePer10(int n) {
+    const suffixes = <int, String>{
+      0: "'ı",
+      1: "'i",
+      2: "'yi",
+      3: "'ü",
+      4: "'ü",
+      5: "'i",
+      6: "'yı",
+      7: "'yi",
+      8: "'i",
+      9: "'u",
+      10: "'u",
+    };
+    return '$n${suffixes[n] ?? "'u"}';
+  }
+
+  /// Dative for 0–10 (e.g. 8'ine, 9'una).
+  static String _turkishDativePer10(int n) {
+    const suffixes = <int, String>{
+      0: "'ına",
+      1: "'ine",
+      2: "'sine",
+      3: "'üne",
+      4: "'üne",
+      5: "'ine",
+      6: "'sına",
+      7: "'sine",
+      8: "'ine",
+      9: "'una",
+      10: "'una",
+    };
+    return '$n${suffixes[n] ?? "'una"}';
   }
 }
 
@@ -626,11 +688,13 @@ class _ProgressRow extends StatelessWidget {
     required this.label,
     required this.percent,
     required this.micro,
+    required this.barColor,
   });
 
   final String label;
   final double? percent;
   final String micro;
+  final Color barColor;
 
   @override
   Widget build(BuildContext context) {
@@ -661,7 +725,7 @@ class _ProgressRow extends StatelessWidget {
             value: percent == null ? null : value,
             minHeight: 8,
             backgroundColor: AppColors.surfaceHigh,
-            color: AppColors.indigo,
+            color: barColor,
           ),
         ),
         const SizedBox(height: 6),
@@ -690,8 +754,8 @@ class _InsightCard extends StatelessWidget {
         ? 'Yeterli veri toplanıyor (En az 3 deneme). Birkaç deneme daha girince '
             'burada net bir teşhis çıkar.'
         : (insight ??
-            'Son denemelerin dengeli görünüyor — formu koru, zayıf dersleri '
-                'küçük hedeflerle toparla.');
+            'Son denemelerin istikrarlı görünüyor; 1-2 zayıf konuya odaklanarak '
+                'formu bir üst seviyeye taşıyabilirsin.');
 
     return SurfaceCard(
       child: Row(

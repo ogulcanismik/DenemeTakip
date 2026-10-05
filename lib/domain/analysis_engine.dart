@@ -86,7 +86,7 @@ abstract final class AnalysisEngine {
     return out;
   }
 
-  /// One plain-Turkish sentence from recent ratios / subject gap.
+  /// One mentor-style Turkish sentence from recent ratios / subject gap.
   /// Returns `null` when there is not enough signal (caller shows sparse copy).
   static String? generateInsight({
     required int examCount,
@@ -98,14 +98,17 @@ abstract final class AnalysisEngine {
     if (examCount < 3) return null;
 
     if (accuracyRate != null && attemptRate != null) {
-      if (accuracyRate > 85 && attemptRate < 60) {
-        return 'İsabetin yüksek ama soruların çoğuna dokunmuyorsun — süre baskısı '
-            'veya fazla temkinlilik seni yavaşlatıyor olabilir; emin olduğun '
-            'sorularda biraz daha hızlanmayı dene.';
+      if (accuracyRate >= 85 && attemptRate < 70) {
+        return 'Doğruluğun yüksek ama biraz temkinlisin — emin olduğun sorularda '
+            'cesaretlenip süreye daha fazla güvenmek netini yükseltebilir.';
       }
-      if (accuracyRate < 65 && attemptRate > 90) {
-        return 'Neredeyse her soruya dokunuyorsun ama isabet düşük — emin '
-            'olmadığın soruları boş bırakmak netini koruyabilir.';
+      if (accuracyRate < 70 && attemptRate >= 85) {
+        return 'Çoğu soruya dokunuyorsun ama doğruluk düşüyor — şüpheli '
+            'hissettiğin soruları boş bırakmak formunu koruyabilir.';
+      }
+      if (accuracyRate >= 85 && attemptRate >= 85) {
+        return 'Doğruluk ve cevaplama oranların harika dengede — bu tempoyu '
+            'korumaya devam et.';
       }
     }
 
@@ -116,6 +119,7 @@ abstract final class AnalysisEngine {
           'önümüzdeki denemelerde buraya odaklan.';
     }
 
-    return null;
+    return 'Son denemelerin istikrarlı görünüyor; 1-2 zayıf konuya odaklanarak '
+        'formu bir üst seviyeye taşıyabilirsin.';
   }
 }

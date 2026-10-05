@@ -104,24 +104,36 @@ void main() {
       );
     });
 
-    test('high accuracy low attempt → süre/temkinlilik', () {
+    test('high accuracy low attempt → cesaret/süre', () {
       final text = AnalysisEngine.generateInsight(
         examCount: 3,
         accuracyRate: 90,
         attemptRate: 50,
         isGeneralScope: false,
       );
-      expect(text, contains('temkinlilik'));
+      expect(text, contains('cesaretlenip'));
+      expect(text, contains('süreye'));
     });
 
-    test('low accuracy high attempt → boş bırakma', () {
+    test('low accuracy high attempt → şüpheli boş bırak', () {
       final text = AnalysisEngine.generateInsight(
         examCount: 3,
         accuracyRate: 50,
         attemptRate: 95,
         isGeneralScope: false,
       );
+      expect(text, contains('şüpheli'));
       expect(text, contains('boş bırakmak'));
+    });
+
+    test('high accuracy high attempt → harika denge', () {
+      final text = AnalysisEngine.generateInsight(
+        examCount: 3,
+        accuracyRate: 90,
+        attemptRate: 90,
+        isGeneralScope: false,
+      );
+      expect(text, contains('harika dengede'));
     });
 
     test('Genel focus subject when ratios do not match tactics', () {
@@ -134,6 +146,17 @@ void main() {
       );
       expect(text, contains('Matematik'));
       expect(text, contains('odaklan'));
+    });
+
+    test('default → istikrarlı / 1-2 konu', () {
+      final text = AnalysisEngine.generateInsight(
+        examCount: 3,
+        accuracyRate: 75,
+        attemptRate: 75,
+        isGeneralScope: false,
+      );
+      expect(text, contains('istikrarlı'));
+      expect(text, contains('1-2'));
     });
   });
 }
