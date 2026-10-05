@@ -43,28 +43,28 @@ class DetailScreen extends ConsumerWidget {
           children: [
             Text(
               formatTurkishDate(saved.date),
-              style: const TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: AppColors.of(context).textMuted),
             ),
             if (exam != null) ...[
               const SizedBox(height: 4),
               Text(
                 exam.name,
-                style: const TextStyle(color: AppColors.textMuted),
+                style: TextStyle(color: AppColors.of(context).textMuted),
               ),
             ],
             const SizedBox(height: 8),
             Text(
               formatNet(saved.totalNet),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.w700,
-                color: AppColors.emerald,
+                color: AppColors.of(context).emerald,
                 height: 1.1,
               ),
             ),
-            const Text(
+            Text(
               'Toplam net',
-              style: TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: AppColors.of(context).textMuted),
             ),
             if (saved.durationMinutes != null) ...[
               const SizedBox(height: 12),
@@ -135,9 +135,9 @@ class DetailScreen extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text(
+              child: Text(
                 'Sil',
-                style: TextStyle(color: AppColors.amber),
+                style: TextStyle(color: AppColors.of(context).amber),
               ),
             ),
           ],
@@ -169,7 +169,7 @@ class _Stat extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            style: TextStyle(color: AppColors.of(context).textMuted, fontSize: 12),
           ),
           const SizedBox(height: 2),
           Text(
@@ -177,7 +177,7 @@ class _Stat extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: emphasize ? AppColors.emerald : AppColors.text,
+              color: emphasize ? AppColors.of(context).emerald : AppColors.of(context).text,
             ),
           ),
         ],

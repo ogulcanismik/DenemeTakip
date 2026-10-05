@@ -96,7 +96,7 @@ class _ExamSwitcher extends ConsumerWidget {
     return PopupMenuButton<String>(
       tooltip: 'Sınav değiştir',
       initialValue: active.id,
-      color: AppColors.surfaceHigh,
+      color: AppColors.of(context).surfaceHigh,
       onSelected: (id) => ref.read(settingsProvider.notifier).setActiveExam(id),
       itemBuilder: (context) {
         return [
@@ -105,8 +105,8 @@ class _ExamSwitcher extends ConsumerWidget {
               value: exam.id,
               child: Text(
                 exam.name,
-                style: const TextStyle(
-                  color: AppColors.text,
+                style: TextStyle(
+                  color: AppColors.of(context).text,
                   fontWeight: FontWeight.w700,
                 ),
               ),

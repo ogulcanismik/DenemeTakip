@@ -71,6 +71,7 @@ abstract final class ExamMigration {
       activeExamTypeId: nextActive,
       enabledExamTypeIds: enabled,
       targetNets: migratedTargets,
+      themeMode: settings.themeMode,
     );
   }
 
@@ -103,6 +104,7 @@ abstract final class ExamMigration {
     if (!_sameStringList(before.enabledExamTypeIds, after.enabledExamTypeIds)) {
       return true;
     }
+    if (before.themeMode != after.themeMode) return true;
     if (before.targetNets.length != after.targetNets.length) return true;
     for (final entry in after.targetNets.entries) {
       if (before.targetNets[entry.key] != entry.value) return true;

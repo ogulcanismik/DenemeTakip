@@ -63,6 +63,13 @@ class SettingsNotifier extends Notifier<AppSettings> {
     state = next;
   }
 
+  Future<void> setThemeMode(AppThemeMode themeMode) async {
+    if (state.themeMode == themeMode) return;
+    final next = state.copyWith(themeMode: themeMode);
+    await ref.read(denemeRepositoryProvider).saveSettings(next);
+    state = next;
+  }
+
   List<String> _sanitizeEnabled(Iterable<String> ids) {
     final seen = <String>{};
     final result = <String>[];

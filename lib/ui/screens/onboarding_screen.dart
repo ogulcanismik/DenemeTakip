@@ -41,10 +41,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Hangi sınavların denemelerini tutacaksın? Birden fazla seçebilirsin. Üst çubukta yalnızca seçtiklerin görünür; diğerlerini Ayarlar’dan ekleyebilirsin.',
                       style: TextStyle(
-                        color: AppColors.textMuted,
+                        color: AppColors.of(context).textMuted,
                         fontSize: 16,
                         height: 1.45,
                       ),
@@ -75,12 +75,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (!canContinue)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 10),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
                         child: Text(
                           'Devam etmek için en az bir sınav seç.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.amber),
+                          style: TextStyle(
+                            color: AppColors.of(context).amber,
+                          ),
                         ),
                       ),
                     FilledButton(
@@ -117,8 +119,8 @@ class _ExamSelectTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: selected
-          ? AppColors.indigo.withValues(alpha: 0.18)
-          : AppColors.surface,
+          ? AppColors.of(context).indigo.withValues(alpha: 0.18)
+          : AppColors.of(context).surface,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -131,7 +133,7 @@ class _ExamSelectTile extends StatelessWidget {
                 selected
                     ? Icons.check_box_rounded
                     : Icons.check_box_outline_blank_rounded,
-                color: selected ? AppColors.indigo : AppColors.textMuted,
+                color: selected ? AppColors.of(context).indigo : AppColors.of(context).textMuted,
               ),
               const SizedBox(width: 12),
               Expanded(

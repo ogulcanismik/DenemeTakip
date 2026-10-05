@@ -1,3 +1,4 @@
+import 'package:deneme_takip/domain/app_settings.dart';
 import 'package:deneme_takip/domain/exam_registry.dart';
 import 'package:deneme_takip/domain/exam_type.dart';
 import 'package:deneme_takip/state/providers.dart';
@@ -45,6 +46,9 @@ class _ExamListSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final themeMode = ref.watch(settingsProvider).themeMode;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Sınav listesini düzenle')),
       body: AppFrame(
@@ -55,19 +59,59 @@ class _ExamListSettingsScreenState
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                 children: [
-                  const Text(
+                  Text(
+                    'Görünüm',
+                    style: TextStyle(
+                      color: colors.text,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Açık, koyu veya cihaz ayarını kullan.',
+                    style: TextStyle(
+                      color: colors.textMuted,
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SegmentedButton<AppThemeMode>(
+                    segments: [
+                      for (final mode in AppThemeMode.values)
+                        ButtonSegment<AppThemeMode>(
+                          value: mode,
+                          label: Text(mode.labelTr),
+                        ),
+                    ],
+                    selected: {themeMode},
+                    onSelectionChanged: (next) {
+                      if (next.isEmpty) return;
+                      ref
+                          .read(settingsProvider.notifier)
+                          .setThemeMode(next.first);
+                    },
+                    showSelectedIcon: false,
+                    style: const ButtonStyle(
+                      visualDensity: VisualDensity.comfortable,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
                     'Diğer sınavlar',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: colors.textMuted,
                       fontSize: 15,
                       height: 1.4,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Kapattığın sınavlar üst çubukta görünmez. Kayıtlı denemeler silinmez; tekrar açınca geçmiş yerinde kalır.',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: colors.textMuted,
                       fontSize: 15,
                       height: 1.4,
                     ),
@@ -104,7 +148,7 @@ class _ExamListSettingsScreenState
                       child: Text(
                         _hint!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.amber),
+                        style: TextStyle(color: colors.amber),
                       ),
                     ),
                   FilledButton(
@@ -134,10 +178,11 @@ class _ExamToggleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Material(
       color: selected
-          ? AppColors.indigo.withValues(alpha: 0.18)
-          : AppColors.surface,
+          ? colors.indigo.withValues(alpha: 0.18)
+          : colors.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -150,7 +195,7 @@ class _ExamToggleTile extends StatelessWidget {
                 selected
                     ? Icons.check_box_rounded
                     : Icons.check_box_outline_blank_rounded,
-                color: selected ? AppColors.indigo : AppColors.textMuted,
+                color: selected ? colors.indigo : colors.textMuted,
               ),
               const SizedBox(width: 12),
               Expanded(

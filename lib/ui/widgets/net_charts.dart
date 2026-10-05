@@ -6,10 +6,11 @@ import 'package:deneme_takip/ui/turkish_date.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-const _axisStyle = TextStyle(color: AppColors.textMuted, fontSize: 11);
+TextStyle _axisStyle(Color muted) =>
+    TextStyle(color: muted, fontSize: 11);
 
 /// Hide the padded axis max when it is not a clean interval tick (e.g. 116,69).
-Widget _leftAxisTitle(double value, TitleMeta meta) {
+Widget _leftAxisTitle(double value, TitleMeta meta, TextStyle style) {
   final atMax = (value - meta.max).abs() < 1e-6;
   if (atMax) {
     final interval = meta.appliedInterval;
@@ -22,7 +23,7 @@ Widget _leftAxisTitle(double value, TitleMeta meta) {
   }
   return SideTitleWidget(
     meta: meta,
-    child: Text(formatNet(value), style: _axisStyle),
+    child: Text(formatNet(value), style: style),
   );
 }
 
@@ -36,6 +37,7 @@ class TotalNetChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (entries.isEmpty) return const SizedBox.shrink();
 
+    final axisStyle = _axisStyle(AppColors.of(context).textMuted);
     var maxValue = target;
     var minValue = 0.0;
     for (final entry in entries) {
@@ -58,7 +60,7 @@ class TotalNetChart extends StatelessWidget {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: AppColors.outline.withValues(alpha: 0.45),
+              color: AppColors.of(context).outline.withValues(alpha: 0.45),
               strokeWidth: 1,
             ),
           ),
@@ -67,15 +69,15 @@ class TotalNetChart extends StatelessWidget {
             horizontalLines: [
               HorizontalLine(
                 y: target,
-                color: AppColors.indigo,
+                color: AppColors.of(context).indigo,
                 strokeWidth: 1.6,
                 dashArray: const [6, 4],
                 label: HorizontalLineLabel(
                   show: true,
                   alignment: Alignment.bottomRight,
                   padding: const EdgeInsets.only(right: 6, bottom: 4),
-                  style: const TextStyle(
-                    color: AppColors.indigo,
+                  style: TextStyle(
+                    color: AppColors.of(context).indigo,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -95,7 +97,7 @@ class TotalNetChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 42,
-                getTitlesWidget: _leftAxisTitle,
+                getTitlesWidget: (value, meta) => _leftAxisTitle(value, meta, axisStyle),
               ),
             ),
             bottomTitles: AxisTitles(
@@ -114,7 +116,7 @@ class TotalNetChart extends StatelessWidget {
                     meta: meta,
                     child: Text(
                       formatShortDate(entries[index].date),
-                      style: _axisStyle,
+                      style: axisStyle,
                     ),
                   );
                 },
@@ -123,14 +125,14 @@ class TotalNetChart extends StatelessWidget {
           ),
           lineTouchData: LineTouchData(
             touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (spot) => AppColors.surfaceHigh,
+              getTooltipColor: (spot) => AppColors.of(context).surfaceHigh,
               getTooltipItems: (spots) {
                 return [
                   for (final spot in spots)
                     LineTooltipItem(
                       formatNet(spot.y),
-                      const TextStyle(
-                        color: AppColors.text,
+                      TextStyle(
+                        color: AppColors.of(context).text,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -144,13 +146,13 @@ class TotalNetChart extends StatelessWidget {
                 for (var i = 0; i < entries.length; i++)
                   FlSpot((i + 1).toDouble(), entries[i].totalNet),
               ],
-              color: AppColors.emerald,
+              color: AppColors.of(context).emerald,
               barWidth: 3,
               isStrokeCapRound: true,
               dotData: const FlDotData(show: true),
               belowBarData: BarAreaData(
                 show: true,
-                color: AppColors.emerald.withValues(alpha: 0.14),
+                color: AppColors.of(context).emerald.withValues(alpha: 0.14),
               ),
             ),
           ],
@@ -185,6 +187,7 @@ class SectionNetChart extends StatelessWidget {
     final maxY = maxValue * 1.2 + 1;
     final minY = minValue < 0 ? minValue * 1.2 : 0.0;
     final rodWidth = exam.sections.length > 4 ? 8.0 : 12.0;
+    final axisStyle = _axisStyle(AppColors.of(context).textMuted);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,7 +204,7 @@ class SectionNetChart extends StatelessWidget {
                 show: true,
                 drawVerticalLine: false,
                 getDrawingHorizontalLine: (value) => FlLine(
-                  color: AppColors.outline.withValues(alpha: 0.45),
+                  color: AppColors.of(context).outline.withValues(alpha: 0.45),
                   strokeWidth: 1,
                 ),
               ),
@@ -210,15 +213,15 @@ class SectionNetChart extends StatelessWidget {
                 touchTooltipData: BarTouchTooltipData(
                   fitInsideHorizontally: true,
                   fitInsideVertically: true,
-                  getTooltipColor: (group) => AppColors.surfaceHigh,
+                  getTooltipColor: (group) => AppColors.of(context).surfaceHigh,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
                     final name = rodIndex < exam.sections.length
                         ? exam.sections[rodIndex].name
                         : '';
                     return BarTooltipItem(
                       '$name\n${formatNet(rod.toY)}',
-                      const TextStyle(
-                        color: AppColors.text,
+                      TextStyle(
+                        color: AppColors.of(context).text,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
                       ),
@@ -237,7 +240,7 @@ class SectionNetChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 36,
-                    getTitlesWidget: _leftAxisTitle,
+                    getTitlesWidget: (value, meta) => _leftAxisTitle(value, meta, axisStyle),
                   ),
                 ),
                 bottomTitles: AxisTitles(
@@ -253,7 +256,7 @@ class SectionNetChart extends StatelessWidget {
                         meta: meta,
                         child: Text(
                           formatShortDate(recent[index].date),
-                          style: _axisStyle,
+                          style: axisStyle,
                         ),
                       );
                     },
@@ -303,8 +306,8 @@ class SectionNetChart extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 220),
                     child: Text(
                       exam.sections[i].name,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
+                      style: TextStyle(
+                        color: AppColors.of(context).textMuted,
                         fontSize: 12,
                       ),
                     ),
@@ -331,14 +334,14 @@ class NetTrendChart extends StatelessWidget {
     super.key,
     required this.entries,
     required this.values,
-    this.lineColor = AppColors.emerald,
+    this.lineColor,
     this.target,
     this.trendValues,
   });
 
   final List<DenemeEntry> entries;
   final List<double> values;
-  final Color lineColor;
+  final Color? lineColor;
   final double? target;
 
   /// Optional smoothed overlay (e.g. 3–5 exam moving average), same length.
@@ -349,6 +352,9 @@ class NetTrendChart extends StatelessWidget {
     if (entries.isEmpty || values.length != entries.length) {
       return const SizedBox.shrink();
     }
+    final colors = AppColors.of(context);
+    final resolvedLine = lineColor ?? colors.emerald;
+    final axisStyle = _axisStyle(colors.textMuted);
     final trend = trendValues;
     final hasTrend =
         trend != null && trend.length == values.length && trend.isNotEmpty;
@@ -382,7 +388,7 @@ class NetTrendChart extends StatelessWidget {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: AppColors.outline.withValues(alpha: 0.45),
+              color: AppColors.of(context).outline.withValues(alpha: 0.45),
               strokeWidth: 1,
             ),
           ),
@@ -393,15 +399,15 @@ class NetTrendChart extends StatelessWidget {
                   horizontalLines: [
                     HorizontalLine(
                       y: target!,
-                      color: AppColors.indigo,
+                      color: AppColors.of(context).indigo,
                       strokeWidth: 1.6,
                       dashArray: const [6, 4],
                       label: HorizontalLineLabel(
                         show: true,
                         alignment: Alignment.bottomRight,
                         padding: const EdgeInsets.only(right: 6, bottom: 4),
-                        style: const TextStyle(
-                          color: AppColors.indigo,
+                        style: TextStyle(
+                          color: AppColors.of(context).indigo,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                         ),
@@ -421,7 +427,7 @@ class NetTrendChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 42,
-                getTitlesWidget: _leftAxisTitle,
+                getTitlesWidget: (value, meta) => _leftAxisTitle(value, meta, axisStyle),
               ),
             ),
             bottomTitles: AxisTitles(
@@ -440,7 +446,7 @@ class NetTrendChart extends StatelessWidget {
                     meta: meta,
                     child: Text(
                       formatShortDate(entries[index].date),
-                      style: _axisStyle,
+                      style: axisStyle,
                     ),
                   );
                 },
@@ -449,14 +455,14 @@ class NetTrendChart extends StatelessWidget {
           ),
           lineTouchData: LineTouchData(
             touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (spot) => AppColors.surfaceHigh,
+              getTooltipColor: (spot) => AppColors.of(context).surfaceHigh,
               getTooltipItems: (spots) {
                 return [
                   for (final spot in spots)
                     LineTooltipItem(
                       formatNet(spot.y),
-                      const TextStyle(
-                        color: AppColors.text,
+                      TextStyle(
+                        color: AppColors.of(context).text,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -471,7 +477,7 @@ class NetTrendChart extends StatelessWidget {
                   for (var i = 0; i < trend.length; i++)
                     FlSpot((i + 1).toDouble(), trend[i]),
                 ],
-                color: lineColor.withValues(alpha: 0.35),
+                color: resolvedLine.withValues(alpha: 0.35),
                 barWidth: 3.5,
                 isStrokeCapRound: true,
                 isCurved: true,
@@ -484,13 +490,13 @@ class NetTrendChart extends StatelessWidget {
                 for (var i = 0; i < values.length; i++)
                   FlSpot((i + 1).toDouble(), values[i]),
               ],
-              color: lineColor,
+              color: resolvedLine,
               barWidth: 3,
               isStrokeCapRound: true,
               dotData: const FlDotData(show: true),
               belowBarData: BarAreaData(
                 show: true,
-                color: lineColor.withValues(alpha: 0.14),
+                color: resolvedLine.withValues(alpha: 0.14),
               ),
             ),
           ],

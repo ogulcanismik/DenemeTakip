@@ -236,7 +236,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   ),
                   const SizedBox(height: 12),
                   Material(
-                    color: AppColors.surface,
+                    color: AppColors.of(context).surface,
                     borderRadius: BorderRadius.circular(14),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
@@ -248,16 +248,16 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.calendar_today_outlined,
-                              color: AppColors.textMuted,
+                              color: AppColors.of(context).textMuted,
                             ),
                             const SizedBox(width: 12),
                             const Text('Tarih'),
                             const Spacer(),
                             Text(
                               formatTurkishDate(_date),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -286,13 +286,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     data: Theme.of(context)
                         .copyWith(dividerColor: Colors.transparent),
                     child: Material(
-                      color: AppColors.surface,
+                      color: AppColors.of(context).surface,
                       borderRadius: BorderRadius.circular(16),
                       child: ExpansionTile(
                         title: const Text('Süre ve zorluk'),
                         subtitle: const Text('İsteğe bağlı'),
-                        iconColor: AppColors.textMuted,
-                        collapsedIconColor: AppColors.textMuted,
+                        iconColor: AppColors.of(context).textMuted,
+                        collapsedIconColor: AppColors.of(context).textMuted,
                         childrenPadding: const EdgeInsets.fromLTRB(
                           16,
                           0,
@@ -313,17 +313,19 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                           ),
                           if (!_durationValid) ...[
                             const SizedBox(height: 8),
-                            const Text(
+                            Text(
                               'Süre, pozitif bir tam sayı olmalı.',
-                              style: TextStyle(color: AppColors.amber),
+                              style: TextStyle(color: AppColors.of(context).amber),
                             ),
                           ],
                           const SizedBox(height: 16),
-                          const Align(
+                          Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Zorluk',
-                              style: TextStyle(color: AppColors.textMuted),
+                              style: TextStyle(
+                                color: AppColors.of(context).textMuted,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -433,8 +435,8 @@ class _SectionCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${definition.questionCount} soru · Boş $empty',
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
+                  style: TextStyle(
+                    color: AppColors.of(context).textMuted,
                     fontSize: 12,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -443,8 +445,8 @@ class _SectionCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Net $net',
-                style: const TextStyle(
-                  color: AppColors.emerald,
+                style: TextStyle(
+                  color: AppColors.of(context).emerald,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -470,7 +472,7 @@ class _SectionCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               _issueText(issue!, definition.questionCount),
-              style: const TextStyle(color: AppColors.amber, height: 1.3),
+              style: TextStyle(color: AppColors.of(context).amber, height: 1.3),
             ),
           ],
         ],
@@ -511,17 +513,17 @@ class EntrySaveBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 'Toplam net',
-                style: TextStyle(fontSize: 14, color: AppColors.textMuted),
+                style: TextStyle(fontSize: 14, color: AppColors.of(context).textMuted),
               ),
               const Spacer(),
               Text(
                 total,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.emerald,
+                  color: AppColors.of(context).emerald,
                 ),
               ),
             ],
@@ -530,7 +532,7 @@ class EntrySaveBar extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               hint!,
-              style: const TextStyle(color: AppColors.amber, height: 1.3),
+              style: TextStyle(color: AppColors.of(context).amber, height: 1.3),
             ),
           ],
           const SizedBox(height: 8),

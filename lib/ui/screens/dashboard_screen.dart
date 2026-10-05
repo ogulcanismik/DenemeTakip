@@ -55,9 +55,9 @@ class DashboardScreen extends ConsumerWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Eskiden yeniye. Kesik çizgi hedef net.',
-                    style: TextStyle(color: AppColors.textMuted),
+                    style: TextStyle(color: AppColors.of(context).textMuted),
                   ),
                   const SizedBox(height: 12),
                   TotalNetChart(entries: oldestFirst, target: target),
@@ -73,7 +73,7 @@ class DashboardScreen extends ConsumerWidget {
                 children: [
                   for (var i = 0; i < recent.length; i++) ...[
                     if (i > 0)
-                      const Divider(height: 1, color: AppColors.outline),
+                      Divider(height: 1, color: AppColors.of(context).outline),
                     _HistoryTile(entry: recent[i]),
                   ],
                 ],
@@ -109,7 +109,7 @@ class _TargetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
+      color: AppColors.of(context).surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -126,14 +126,14 @@ class _TargetCard extends StatelessWidget {
               ),
               Text(
                 formatNet(target),
-                style: const TextStyle(
-                  color: AppColors.indigo,
+                style: TextStyle(
+                  color: AppColors.of(context).indigo,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.edit_outlined, color: AppColors.textMuted),
+              Icon(Icons.edit_outlined, color: AppColors.of(context).textMuted),
             ],
           ),
         ),
@@ -199,7 +199,7 @@ class _TargetDialogState extends State<_TargetDialog> {
           ),
           if (_hint != null) ...[
             const SizedBox(height: 8),
-            Text(_hint!, style: const TextStyle(color: AppColors.amber)),
+            Text(_hint!, style: TextStyle(color: AppColors.of(context).amber)),
           ],
         ],
       ),
@@ -232,9 +232,9 @@ class _EmptyState extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'İlkini girmek bir dakikadan kısa sürer. Doğru ve yanlış yeterli; boş kendiliğinden hesaplanır.',
-            style: TextStyle(color: AppColors.textMuted, height: 1.4),
+            style: TextStyle(color: AppColors.of(context).textMuted, height: 1.4),
           ),
           const SizedBox(height: 16),
           FilledButton(
@@ -264,8 +264,8 @@ class _HistoryTile extends StatelessWidget {
       subtitle: Text(formatTurkishDate(entry.date)),
       trailing: Text(
         formatNet(entry.totalNet),
-        style: const TextStyle(
-          color: AppColors.emerald,
+        style: TextStyle(
+          color: AppColors.of(context).emerald,
           fontSize: 20,
           fontWeight: FontWeight.w700,
         ),

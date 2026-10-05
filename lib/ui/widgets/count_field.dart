@@ -72,8 +72,8 @@ class _CountFieldState extends State<CountField> {
       children: [
         Text(
           widget.label,
-          style: const TextStyle(
-            color: AppColors.textMuted,
+          style: TextStyle(
+            color: AppColors.of(context).textMuted,
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -101,10 +101,10 @@ class _CountFieldState extends State<CountField> {
                   textAlign: TextAlign.center,
                   enableSuggestions: false,
                   autocorrect: false,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.text,
+                    color: AppColors.of(context).text,
                     height: 1.2,
                   ),
                   inputFormatters: [
@@ -153,8 +153,8 @@ class _StepButton extends StatelessWidget {
       onPressed: onPressed,
       icon: Icon(icon, size: 20),
       style: IconButton.styleFrom(
-        backgroundColor: AppColors.surfaceHigh,
-        foregroundColor: AppColors.text,
+        backgroundColor: AppColors.of(context).surfaceHigh,
+        foregroundColor: AppColors.of(context).text,
         minimumSize: const Size(40, 40),
         fixedSize: const Size(40, 40),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,

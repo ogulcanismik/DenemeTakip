@@ -1,16 +1,105 @@
 import 'package:flutter/material.dart';
 
-abstract final class AppColors {
-  static const background = Color(0xFF1C1917);
-  static const surface = Color(0xFF292524);
-  static const surfaceHigh = Color(0xFF44403C);
-  static const outline = Color(0xFF57534E);
-  static const text = Color(0xFFFAF7F2);
-  static const textMuted = Color(0xFFA8A29E);
-  static const indigo = Color(0xFF818CF8);
-  static const indigoInk = Color(0xFF1E1B4B);
-  static const emerald = Color(0xFF34D399);
-  static const amber = Color(0xFFD6B25E);
+@immutable
+class AppColors extends ThemeExtension<AppColors> {
+  const AppColors({
+    required this.background,
+    required this.surface,
+    required this.surfaceHigh,
+    required this.outline,
+    required this.text,
+    required this.textMuted,
+    required this.indigo,
+    required this.indigoInk,
+    required this.emerald,
+    required this.amber,
+  });
+
+  final Color background;
+  final Color surface;
+  final Color surfaceHigh;
+  final Color outline;
+  final Color text;
+  final Color textMuted;
+  final Color indigo;
+  final Color indigoInk;
+  final Color emerald;
+  final Color amber;
+
+  static const dark = AppColors(
+    background: Color(0xFF1C1917),
+    surface: Color(0xFF292524),
+    surfaceHigh: Color(0xFF44403C),
+    outline: Color(0xFF57534E),
+    text: Color(0xFFFAF7F2),
+    textMuted: Color(0xFFA8A29E),
+    indigo: Color(0xFF818CF8),
+    indigoInk: Color(0xFF1E1B4B),
+    emerald: Color(0xFF34D399),
+    amber: Color(0xFFD6B25E),
+  );
+
+  /// Warm stone light palette — indigo/emerald accents, not purple-on-white.
+  static const light = AppColors(
+    background: Color(0xFFEFEEEA),
+    surface: Color(0xFFFBFBFA),
+    surfaceHigh: Color(0xFFE4E2DC),
+    outline: Color(0xFFC8C5BE),
+    text: Color(0xFF1C1917),
+    textMuted: Color(0xFF6F6B66),
+    indigo: Color(0xFF4338CA),
+    indigoInk: Color(0xFFEEF2FF),
+    emerald: Color(0xFF047857),
+    amber: Color(0xFFB45309),
+  );
+
+  static AppColors of(BuildContext context) {
+    return Theme.of(context).extension<AppColors>() ?? AppColors.dark;
+  }
+
+  @override
+  AppColors copyWith({
+    Color? background,
+    Color? surface,
+    Color? surfaceHigh,
+    Color? outline,
+    Color? text,
+    Color? textMuted,
+    Color? indigo,
+    Color? indigoInk,
+    Color? emerald,
+    Color? amber,
+  }) {
+    return AppColors(
+      background: background ?? this.background,
+      surface: surface ?? this.surface,
+      surfaceHigh: surfaceHigh ?? this.surfaceHigh,
+      outline: outline ?? this.outline,
+      text: text ?? this.text,
+      textMuted: textMuted ?? this.textMuted,
+      indigo: indigo ?? this.indigo,
+      indigoInk: indigoInk ?? this.indigoInk,
+      emerald: emerald ?? this.emerald,
+      amber: amber ?? this.amber,
+    );
+  }
+
+  @override
+  AppColors lerp(ThemeExtension<AppColors>? other, double t) {
+    if (other is! AppColors) return this;
+    return AppColors(
+      background: Color.lerp(background, other.background, t)!,
+      surface: Color.lerp(surface, other.surface, t)!,
+      surfaceHigh: Color.lerp(surfaceHigh, other.surfaceHigh, t)!,
+      outline: Color.lerp(outline, other.outline, t)!,
+      text: Color.lerp(text, other.text, t)!,
+      textMuted: Color.lerp(textMuted, other.textMuted, t)!,
+      indigo: Color.lerp(indigo, other.indigo, t)!,
+      indigoInk: Color.lerp(indigoInk, other.indigoInk, t)!,
+      emerald: Color.lerp(emerald, other.emerald, t)!,
+      amber: Color.lerp(amber, other.amber, t)!,
+    );
+  }
 }
 
 const sectionPalette = <Color>[
@@ -24,81 +113,110 @@ const sectionPalette = <Color>[
 
 Color sectionColor(int index) => sectionPalette[index % sectionPalette.length];
 
-ThemeData buildDenemeTheme() {
-  const scheme = ColorScheme.dark(
-    surface: AppColors.background,
-    onSurface: AppColors.text,
-    onSurfaceVariant: AppColors.textMuted,
-    primary: AppColors.indigo,
-    onPrimary: AppColors.indigoInk,
-    secondary: AppColors.emerald,
-    onSecondary: Color(0xFF022C22),
-    tertiary: AppColors.amber,
-    onTertiary: AppColors.background,
-    error: AppColors.amber,
-    onError: AppColors.background,
-    outline: AppColors.outline,
-    surfaceContainerLowest: AppColors.background,
-    surfaceContainerLow: AppColors.surface,
-    surfaceContainer: AppColors.surface,
-    surfaceContainerHigh: AppColors.surfaceHigh,
-    surfaceContainerHighest: AppColors.surfaceHigh,
-  );
+ThemeData buildDenemeDarkTheme() => _buildDenemeTheme(AppColors.dark);
+
+ThemeData buildDenemeLightTheme() => _buildDenemeTheme(AppColors.light);
+
+/// Kept for callers that still expect a single builder (dark).
+ThemeData buildDenemeTheme() => buildDenemeDarkTheme();
+
+ThemeData _buildDenemeTheme(AppColors colors) {
+  final isDark = colors == AppColors.dark;
+  final scheme = isDark
+      ? ColorScheme.dark(
+          surface: colors.background,
+          onSurface: colors.text,
+          onSurfaceVariant: colors.textMuted,
+          primary: colors.indigo,
+          onPrimary: colors.indigoInk,
+          secondary: colors.emerald,
+          onSecondary: const Color(0xFF022C22),
+          tertiary: colors.amber,
+          onTertiary: colors.background,
+          error: colors.amber,
+          onError: colors.background,
+          outline: colors.outline,
+          surfaceContainerLowest: colors.background,
+          surfaceContainerLow: colors.surface,
+          surfaceContainer: colors.surface,
+          surfaceContainerHigh: colors.surfaceHigh,
+          surfaceContainerHighest: colors.surfaceHigh,
+        )
+      : ColorScheme.light(
+          surface: colors.background,
+          onSurface: colors.text,
+          onSurfaceVariant: colors.textMuted,
+          primary: colors.indigo,
+          onPrimary: colors.indigoInk,
+          secondary: colors.emerald,
+          onSecondary: const Color(0xFFECFDF5),
+          tertiary: colors.amber,
+          onTertiary: const Color(0xFFFFFBEB),
+          error: colors.amber,
+          onError: const Color(0xFFFFFBEB),
+          outline: colors.outline,
+          surfaceContainerLowest: colors.background,
+          surfaceContainerLow: colors.surface,
+          surfaceContainer: colors.surface,
+          surfaceContainerHigh: colors.surfaceHigh,
+          surfaceContainerHighest: colors.surfaceHigh,
+        );
 
   return ThemeData(
     useMaterial3: true,
-    brightness: Brightness.dark,
+    brightness: isDark ? Brightness.dark : Brightness.light,
     colorScheme: scheme,
-    scaffoldBackgroundColor: AppColors.background,
+    scaffoldBackgroundColor: colors.background,
     splashFactory: InkSparkle.splashFactory,
-    textTheme: const TextTheme(
+    extensions: [colors],
+    textTheme: TextTheme(
       headlineMedium: TextStyle(
         fontSize: 32,
         fontWeight: FontWeight.w700,
         height: 1.15,
-        color: AppColors.text,
+        color: colors.text,
       ),
       titleLarge: TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.w700,
-        color: AppColors.text,
+        color: colors.text,
       ),
       titleMedium: TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.w600,
-        color: AppColors.text,
+        color: colors.text,
       ),
-      bodyLarge: TextStyle(fontSize: 16, height: 1.4, color: AppColors.text),
+      bodyLarge: TextStyle(fontSize: 16, height: 1.4, color: colors.text),
       bodyMedium: TextStyle(
         fontSize: 14,
         height: 1.4,
-        color: AppColors.textMuted,
+        color: colors.textMuted,
       ),
-      labelLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      labelLarge: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.background,
-      foregroundColor: AppColors.text,
+    appBarTheme: AppBarTheme(
+      backgroundColor: colors.background,
+      foregroundColor: colors.text,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w700,
-        color: AppColors.text,
+        color: colors.text,
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       height: 72,
-      indicatorColor: AppColors.indigo.withValues(alpha: 0.28),
+      indicatorColor: colors.indigo.withValues(alpha: isDark ? 0.28 : 0.16),
       labelTextStyle: WidgetStateProperty.all(
         const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
         return IconThemeData(
-          color: selected ? AppColors.indigo : AppColors.textMuted,
+          color: selected ? colors.indigo : colors.textMuted,
           size: 26,
         );
       }),
@@ -106,8 +224,8 @@ ThemeData buildDenemeTheme() {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size.fromHeight(56),
-        backgroundColor: AppColors.indigo,
-        foregroundColor: AppColors.indigoInk,
+        backgroundColor: colors.indigo,
+        foregroundColor: colors.indigoInk,
         textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
@@ -115,17 +233,17 @@ ThemeData buildDenemeTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(56),
-        foregroundColor: AppColors.text,
-        side: const BorderSide(color: AppColors.outline),
+        foregroundColor: colors.text,
+        side: BorderSide(color: colors.outline),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.surfaceHigh,
-      labelStyle: const TextStyle(color: AppColors.textMuted),
-      hintStyle: const TextStyle(color: AppColors.textMuted),
-      floatingLabelStyle: const TextStyle(color: AppColors.indigo),
+      fillColor: colors.surfaceHigh,
+      labelStyle: TextStyle(color: colors.textMuted),
+      hintStyle: TextStyle(color: colors.textMuted),
+      floatingLabelStyle: TextStyle(color: colors.indigo),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -137,29 +255,42 @@ ThemeData buildDenemeTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.indigo, width: 1.4),
+        borderSide: BorderSide(color: colors.indigo, width: 1.4),
       ),
     ),
     dialogTheme: DialogThemeData(
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
-    dividerTheme: const DividerThemeData(color: AppColors.outline, space: 1),
+    dividerTheme: DividerThemeData(color: colors.outline, space: 1),
     chipTheme: ChipThemeData(
-      backgroundColor: AppColors.surfaceHigh,
-      selectedColor: AppColors.indigo.withValues(alpha: 0.35),
-      labelStyle: const TextStyle(
-        color: AppColors.text,
+      backgroundColor: colors.surfaceHigh,
+      selectedColor: colors.indigo.withValues(alpha: isDark ? 0.35 : 0.18),
+      labelStyle: TextStyle(
+        color: colors.text,
         fontWeight: FontWeight.w700,
       ),
       side: BorderSide.none,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
-    listTileTheme: const ListTileThemeData(
-      iconColor: AppColors.textMuted,
-      textColor: AppColors.text,
+    listTileTheme: ListTileThemeData(
+      iconColor: colors.textMuted,
+      textColor: colors.text,
       minTileHeight: 72,
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return colors.indigoInk;
+          return colors.text;
+        }),
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return colors.indigo;
+          return colors.surfaceHigh;
+        }),
+        side: WidgetStateProperty.all(BorderSide(color: colors.outline)),
+      ),
     ),
   );
 }
@@ -197,8 +328,9 @@ class SurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Material(
-      color: AppColors.surface,
+      color: colors.surface,
       borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.none,
       child: Padding(

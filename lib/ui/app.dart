@@ -18,9 +18,9 @@ class DenemeApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Deneme Takip',
       debugShowCheckedModeBanner: false,
-      theme: buildDenemeTheme(),
-      darkTheme: buildDenemeTheme(),
-      themeMode: ThemeMode.dark,
+      theme: buildDenemeLightTheme(),
+      darkTheme: buildDenemeDarkTheme(),
+      themeMode: settings.themeMode.material,
       locale: const Locale('tr', 'TR'),
       supportedLocales: const [Locale('tr', 'TR')],
       localizationsDelegates: const [

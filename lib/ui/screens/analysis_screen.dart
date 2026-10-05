@@ -197,10 +197,10 @@ class _AnalysisPage extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'En az bir deneme kaydedince form, trend ve isabet burada görünür.',
                       style: TextStyle(
-                        color: AppColors.textMuted,
+                        color: AppColors.of(context).textMuted,
                         height: 1.4,
                       ),
                     ),
@@ -266,7 +266,7 @@ class _AnalysisPage extends StatelessWidget {
     );
 
     final lineColor =
-        sectionIndex < 0 ? AppColors.emerald : sectionColor(sectionIndex);
+        sectionIndex < 0 ? AppColors.of(context).emerald : sectionColor(sectionIndex);
     final chartTitle = sectionId == null
         ? 'Toplam net trendi'
         : '${exam.sectionById(sectionId!)?.name ?? 'Ders'} net trendi';
@@ -308,15 +308,17 @@ class _AnalysisPage extends StatelessWidget {
                       chartEntries.length >= _chartWindow
                           ? 'Son $_chartWindow deneme · yumuşak çizgi $_maWindow deneme ort.'
                           : 'Eskiden yeniye · yumuşak çizgi $_maWindow deneme ort.',
-                      style: const TextStyle(color: AppColors.textMuted),
+                      style: TextStyle(color: AppColors.of(context).textMuted),
                     ),
                     const SizedBox(height: 12),
                     if (chartEntries.length < 2)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 28),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 28),
                         child: Text(
                           'Yeterli veri toplanıyor (En az 3 deneme)',
-                          style: TextStyle(color: AppColors.textMuted),
+                          style: TextStyle(
+                            color: AppColors.of(context).textMuted,
+                          ),
                         ),
                       )
                     else
@@ -412,9 +414,12 @@ class _SparseBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: const Text(
+      child: Text(
         'Yeterli veri toplanıyor (En az 3 deneme)',
-        style: TextStyle(color: AppColors.textMuted, height: 1.35),
+        style: TextStyle(
+          color: AppColors.of(context).textMuted,
+          height: 1.35,
+        ),
       ),
     );
   }
@@ -437,7 +442,7 @@ class _FormPerformanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final badge = _trendBadge(deltaPct);
+    final badge = _trendBadge(context, deltaPct);
 
     return SurfaceCard(
       child: Column(
@@ -455,10 +460,10 @@ class _FormPerformanceCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Form Düzeyi',
                       style: TextStyle(
-                        color: AppColors.textMuted,
+                        color: AppColors.of(context).textMuted,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -466,7 +471,7 @@ class _FormPerformanceCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       formAvg == null ? '—' : formatNet(formAvg!),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                       ),
@@ -476,8 +481,8 @@ class _FormPerformanceCard extends StatelessWidget {
                       examCount >= 5
                           ? 'Son 5 deneme ort.'
                           : 'Mevcut deneme ort.',
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
+                      style: TextStyle(
+                        color: AppColors.of(context).textMuted,
                         fontSize: 12,
                       ),
                     ),
@@ -488,10 +493,10 @@ class _FormPerformanceCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          const Text(
+          Text(
             'Güvenli Net Aralığı',
             style: TextStyle(
-              color: AppColors.textMuted,
+              color: AppColors.of(context).textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -521,10 +526,12 @@ class _FormPerformanceCard extends StatelessWidget {
     );
   }
 
-  Widget? _trendBadge(double? delta) {
+  Widget? _trendBadge(BuildContext context, double? delta) {
     if (delta == null) return null;
     final positive = delta >= 0;
-    final color = positive ? AppColors.emerald : AppColors.amber;
+    final color = positive
+        ? AppColors.of(context).emerald
+        : AppColors.of(context).amber;
     final arrow = positive ? '▲' : '▼';
     final sign = positive ? '+' : '';
     return Container(
@@ -561,7 +568,7 @@ class _RangeTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceHigh.withValues(alpha: 0.55),
+        color: AppColors.of(context).surfaceHigh.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -569,8 +576,8 @@ class _RangeTile extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textMuted,
+            style: TextStyle(
+              color: AppColors.of(context).textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -583,7 +590,7 @@ class _RangeTile extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             caption,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            style: TextStyle(color: AppColors.of(context).textMuted, fontSize: 11),
           ),
         ],
       ),
@@ -739,15 +746,15 @@ class _ProgressRow extends StatelessWidget {
           child: LinearProgressIndicator(
             value: percent == null ? null : value,
             minHeight: 8,
-            backgroundColor: AppColors.surfaceHigh,
+            backgroundColor: AppColors.of(context).surfaceHigh,
             color: barColor,
           ),
         ),
         const SizedBox(height: 6),
         Text(
           micro,
-          style: const TextStyle(
-            color: AppColors.textMuted,
+          style: TextStyle(
+            color: AppColors.of(context).textMuted,
             fontSize: 12,
             height: 1.35,
           ),
@@ -780,12 +787,12 @@ class _InsightCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.indigo.withValues(alpha: 0.18),
+              color: AppColors.of(context).indigo.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.auto_awesome_outlined,
-              color: AppColors.indigo,
+              color: AppColors.of(context).indigo,
               size: 22,
             ),
           ),
@@ -801,8 +808,8 @@ class _InsightCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   body,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
+                  style: TextStyle(
+                    color: AppColors.of(context).textMuted,
                     height: 1.4,
                   ),
                 ),

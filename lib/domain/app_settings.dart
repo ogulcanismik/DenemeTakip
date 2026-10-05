@@ -1,4 +1,37 @@
 import 'package:deneme_takip/domain/exam_registry.dart';
+import 'package:flutter/material.dart';
+
+enum AppThemeMode {
+  system,
+  light,
+  dark;
+
+  static AppThemeMode parse(Object? raw) {
+    switch (raw) {
+      case 'light':
+        return AppThemeMode.light;
+      case 'system':
+        return AppThemeMode.system;
+      case 'dark':
+      default:
+        return AppThemeMode.dark;
+    }
+  }
+
+  String get storageValue => name;
+
+  ThemeMode get material => switch (this) {
+    AppThemeMode.system => ThemeMode.system,
+    AppThemeMode.light => ThemeMode.light,
+    AppThemeMode.dark => ThemeMode.dark,
+  };
+
+  String get labelTr => switch (this) {
+    AppThemeMode.system => 'Sistem',
+    AppThemeMode.light => 'Açık',
+    AppThemeMode.dark => 'Koyu',
+  };
+}
 
 class AppSettings {
   const AppSettings({
@@ -6,12 +39,14 @@ class AppSettings {
     required this.activeExamTypeId,
     required this.enabledExamTypeIds,
     required this.targetNets,
+    this.themeMode = AppThemeMode.dark,
   });
 
   final bool onboarded;
   final String? activeExamTypeId;
   final List<String> enabledExamTypeIds;
   final Map<String, double> targetNets;
+  final AppThemeMode themeMode;
 
   static AppSettings defaults() {
     return AppSettings(
@@ -21,6 +56,7 @@ class AppSettings {
       targetNets: {
         for (final exam in ExamRegistry.all) exam.id: exam.defaultTargetNet,
       },
+      themeMode: AppThemeMode.dark,
     );
   }
 
@@ -37,6 +73,7 @@ class AppSettings {
     String? activeExamTypeId,
     List<String>? enabledExamTypeIds,
     Map<String, double>? targetNets,
+    AppThemeMode? themeMode,
     bool clearActiveExam = false,
   }) {
     return AppSettings(
@@ -46,6 +83,7 @@ class AppSettings {
           : (activeExamTypeId ?? this.activeExamTypeId),
       enabledExamTypeIds: enabledExamTypeIds ?? this.enabledExamTypeIds,
       targetNets: targetNets ?? this.targetNets,
+      themeMode: themeMode ?? this.themeMode,
     );
   }
 
@@ -54,6 +92,7 @@ class AppSettings {
     'activeExamTypeId': activeExamTypeId,
     'enabledExamTypeIds': enabledExamTypeIds,
     'targets': targetNets,
+    'themeMode': themeMode.storageValue,
   };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
@@ -86,6 +125,7 @@ class AppSettings {
       activeExamTypeId: active,
       enabledExamTypeIds: enabled,
       targetNets: targets,
+      themeMode: AppThemeMode.parse(json['themeMode']),
     );
   }
 }
