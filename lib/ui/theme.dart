@@ -200,6 +200,7 @@ class SurfaceCard extends StatelessWidget {
     return Material(
       color: AppColors.surface,
       borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.none,
       child: Padding(
         padding: padding ?? const EdgeInsets.all(16),
         child: child,

@@ -203,7 +203,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               AppSpacing.shellBodyHorizontal,
               4,
               AppSpacing.shellBodyHorizontal,
-              0,
+              12,
             ),
             child: EntrySaveBar(
               total: total,
@@ -220,7 +220,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.shellBodyHorizontal,
-                  12,
+                  4,
                   AppSpacing.shellBodyHorizontal,
                   24,
                 ),
@@ -419,15 +419,25 @@ class _SectionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
+              Text(
+                definition.name,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 16,
+                      height: 1.2,
+                    ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  definition.name,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 16,
-                        height: 1.2,
-                      ),
+                  '${definition.questionCount} soru · Boş $empty',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
@@ -440,11 +450,6 @@ class _SectionCard extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '${definition.questionCount} soru · Boş $empty',
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 8),
           if (wide)
