@@ -17,6 +17,8 @@ class AnalysisScreen extends ConsumerStatefulWidget {
 
 class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
   late final PageController _pageController;
+  final ScrollController _chipScrollController = ScrollController();
+  final Map<int, GlobalKey> _chipKeys = {};
   int _pageIndex = 0;
 
   @override
@@ -28,12 +30,37 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _chipScrollController.dispose();
     super.dispose();
+  }
+
+  GlobalKey _chipKey(int index) =>
+      _chipKeys.putIfAbsent(index, GlobalKey.new);
+
+  void _scrollSelectedChipIntoView(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final context = _chipKeys[index]?.currentContext;
+      if (context == null) return;
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        alignment: 0.5,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+      );
+    });
+  }
+
+  void _onPageIndexChanged(int page) {
+    if (_pageIndex == page) return;
+    setState(() => _pageIndex = page);
+    _scrollSelectedChipIntoView(page);
   }
 
   void _goToPage(int page) {
     if (_pageIndex == page) return;
-    setState(() => _pageIndex = page);
+    _onPageIndexChanged(page);
     if (_pageController.hasClients) {
       _pageController.jumpToPage(page);
     }
@@ -68,20 +95,27 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: SingleChildScrollView(
+              controller: _chipScrollController,
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  FilterChip(
-                    label: const Text('Tümü'),
-                    selected: _pageIndex == 0,
-                    onSelected: (_) => _goToPage(0),
+                  KeyedSubtree(
+                    key: _chipKey(0),
+                    child: FilterChip(
+                      label: const Text('Tümü'),
+                      selected: _pageIndex == 0,
+                      onSelected: (_) => _goToPage(0),
+                    ),
                   ),
                   for (var i = 0; i < exam.sections.length; i++) ...[
                     const SizedBox(width: 8),
-                    FilterChip(
-                      label: Text(exam.sections[i].name),
-                      selected: _pageIndex == i + 1,
-                      onSelected: (_) => _goToPage(i + 1),
+                    KeyedSubtree(
+                      key: _chipKey(i + 1),
+                      child: FilterChip(
+                        label: Text(exam.sections[i].name),
+                        selected: _pageIndex == i + 1,
+                        onSelected: (_) => _goToPage(i + 1),
+                      ),
                     ),
                   ],
                 ],
@@ -92,10 +126,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
             child: PageView.builder(
               controller: _pageController,
               itemCount: pageCount,
-              onPageChanged: (index) {
-                if (_pageIndex == index) return;
-                setState(() => _pageIndex = index);
-              },
+              onPageChanged: _onPageIndexChanged,
               itemBuilder: (context, page) {
                 final sectionId =
                     page == 0 ? null : exam.sections[page - 1].id;
