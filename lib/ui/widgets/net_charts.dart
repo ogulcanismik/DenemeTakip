@@ -8,6 +8,24 @@ import 'package:flutter/material.dart';
 
 const _axisStyle = TextStyle(color: AppColors.textMuted, fontSize: 11);
 
+/// Hide the padded axis max when it is not a clean interval tick (e.g. 116,69).
+Widget _leftAxisTitle(double value, TitleMeta meta) {
+  final atMax = (value - meta.max).abs() < 1e-6;
+  if (atMax) {
+    final interval = meta.appliedInterval;
+    if (interval > 0) {
+      final stepsFromMin = (value - meta.min) / interval;
+      if ((stepsFromMin - stepsFromMin.round()).abs() > 1e-6) {
+        return const SizedBox.shrink();
+      }
+    }
+  }
+  return SideTitleWidget(
+    meta: meta,
+    child: Text(formatNet(value), style: _axisStyle),
+  );
+}
+
 class TotalNetChart extends StatelessWidget {
   const TotalNetChart({super.key, required this.entries, required this.target});
 
@@ -77,10 +95,7 @@ class TotalNetChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 42,
-                getTitlesWidget: (value, meta) => SideTitleWidget(
-                  meta: meta,
-                  child: Text(formatNet(value), style: _axisStyle),
-                ),
+                getTitlesWidget: _leftAxisTitle,
               ),
             ),
             bottomTitles: AxisTitles(
@@ -222,10 +237,7 @@ class SectionNetChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 36,
-                    getTitlesWidget: (value, meta) => SideTitleWidget(
-                      meta: meta,
-                      child: Text(formatNet(value), style: _axisStyle),
-                    ),
+                    getTitlesWidget: _leftAxisTitle,
                   ),
                 ),
                 bottomTitles: AxisTitles(
