@@ -35,8 +35,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
     super.dispose();
   }
 
-  GlobalKey _chipKey(int index) =>
-      _chipKeys.putIfAbsent(index, GlobalKey.new);
+  GlobalKey _chipKey(int index) => _chipKeys.putIfAbsent(index, GlobalKey.new);
 
   void _scrollSelectedChipIntoView(int index) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -134,8 +133,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
               itemCount: pageCount,
               onPageChanged: _onPageIndexChanged,
               itemBuilder: (context, page) {
-                final sectionId =
-                    page == 0 ? null : exam.sections[page - 1].id;
+                final sectionId = page == 0 ? null : exam.sections[page - 1].id;
                 return _AnalysisPage(
                   exam: exam,
                   oldestFirst: oldestFirst,
@@ -193,12 +191,12 @@ class _AnalysisPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Analiz için deneme yok',
+                      'Henüz deneme yok',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'En az bir deneme kaydedince form, trend ve isabet burada görünür.',
+                      'İlk denemeni gir ve performansını analiz etmeye başla!',
                       style: TextStyle(
                         color: AppColors.of(context).textMuted,
                         height: 1.4,
@@ -216,8 +214,10 @@ class _AnalysisPage extends StatelessWidget {
     final allValues = [
       for (final entry in oldestFirst) _netFor(entry, sectionId),
     ];
-    final formAvg =
-        AnalysisEngine.calculateRollingAverage(allValues, _formWindow);
+    final formAvg = AnalysisEngine.calculateRollingAverage(
+      allValues,
+      _formWindow,
+    );
     final latest = allValues.last;
     final deltaPct = formAvg == null
         ? null
@@ -265,8 +265,9 @@ class _AnalysisPage extends StatelessWidget {
       focusSubjectName: focusSubject,
     );
 
-    final lineColor =
-        sectionIndex < 0 ? AppColors.of(context).emerald : sectionColor(sectionIndex);
+    final lineColor = sectionIndex < 0
+        ? AppColors.of(context).emerald
+        : sectionColor(sectionIndex);
     final chartTitle = sectionId == null
         ? 'Toplam net trendi'
         : '${exam.sectionById(sectionId!)?.name ?? 'Ders'} net trendi';
@@ -338,10 +339,7 @@ class _AnalysisPage extends StatelessWidget {
                 attemptRate: ratios.attemptRate,
               ),
               const SizedBox(height: 12),
-              _InsightCard(
-                insight: insight,
-                sparse: sparse,
-              ),
+              _InsightCard(insight: insight, sparse: sparse),
             ]),
           ),
         ),
@@ -384,10 +382,7 @@ class _AnalysisPage extends StatelessWidget {
   }
 
   /// Subject with largest gap vs potential (questionCount − avg net) over entries.
-  static String? _weakestSubjectName(
-    ExamType exam,
-    List<DenemeEntry> entries,
-  ) {
+  static String? _weakestSubjectName(ExamType exam, List<DenemeEntry> entries) {
     if (entries.isEmpty || exam.sections.isEmpty) return null;
     String? worstName;
     var worstGap = double.negativeInfinity;
@@ -416,10 +411,7 @@ class _SparseBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Text(
         'Yeterli veri toplanıyor (En az 3 deneme)',
-        style: TextStyle(
-          color: AppColors.of(context).textMuted,
-          height: 1.35,
-        ),
+        style: TextStyle(color: AppColors.of(context).textMuted, height: 1.35),
       ),
     );
   }
@@ -585,12 +577,18 @@ class _RangeTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700).data,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ).data,
           ),
           const SizedBox(height: 2),
           Text(
             caption,
-            style: TextStyle(color: AppColors.of(context).textMuted, fontSize: 11),
+            style: TextStyle(
+              color: AppColors.of(context).textMuted,
+              fontSize: 11,
+            ),
           ),
         ],
       ),
@@ -599,10 +597,7 @@ class _RangeTile extends StatelessWidget {
 }
 
 class _TacticsCard extends StatelessWidget {
-  const _TacticsCard({
-    required this.accuracyRate,
-    required this.attemptRate,
-  });
+  const _TacticsCard({required this.accuracyRate, required this.attemptRate});
 
   final double? accuracyRate;
   final double? attemptRate;
@@ -774,10 +769,10 @@ class _InsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final body = sparse
         ? 'Yeterli veri toplanıyor (En az 3 deneme). Birkaç deneme daha girince '
-            'burada net bir teşhis çıkar.'
+              'burada net bir teşhis çıkar.'
         : (insight ??
-            'Son denemelerin istikrarlı görünüyor; 1-2 zayıf konuya odaklanarak '
-                'formu bir üst seviyeye taşıyabilirsin.');
+              'Son denemelerin istikrarlı görünüyor; 1-2 zayıf konuya odaklanarak '
+                  'formu bir üst seviyeye taşıyabilirsin.');
 
     return SurfaceCard(
       child: Row(

@@ -65,7 +65,10 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Text('Son denemeler', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Son denemeler',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             SurfaceCard(
               padding: EdgeInsets.zero,
@@ -194,8 +197,10 @@ class _TargetDialogState extends State<_TargetDialog> {
             controller: _controller,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)
-                .data,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ).data,
             decoration: const InputDecoration(labelText: 'Hedef'),
             onSubmitted: (_) => _submit(),
           ),
@@ -230,13 +235,16 @@ class _EmptyState extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Henüz $examName denemesi yok.',
+            'Henüz deneme yok.',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           Text(
-            'İlkini girmek bir dakikadan kısa sürer. Doğru ve yanlış yeterli; boş kendiliğinden hesaplanır.',
-            style: TextStyle(color: AppColors.of(context).textMuted, height: 1.4),
+            'İlk denemeni gir ve performansını analiz etmeye başla!',
+            style: TextStyle(
+              color: AppColors.of(context).textMuted,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 16),
           FilledButton(
