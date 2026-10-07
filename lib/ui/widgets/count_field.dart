@@ -86,7 +86,7 @@ class _CountFieldState extends State<CountField> {
               icon: Icons.remove,
               onPressed: () => widget.onStep(-1),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Expanded(
               child: FocusTraversalOrder(
                 order: NumericFocusOrder(widget.order),
@@ -113,7 +113,7 @@ class _CountFieldState extends State<CountField> {
                   decoration: const InputDecoration(
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(
-                      horizontal: 6,
+                      horizontal: 4,
                       vertical: 8,
                     ),
                   ),
@@ -122,7 +122,7 @@ class _CountFieldState extends State<CountField> {
                 ),
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             _StepButton(
               tooltip: '${widget.label} artır',
               icon: Icons.add,
@@ -155,8 +155,8 @@ class _StepButton extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: AppColors.of(context).surfaceHigh,
         foregroundColor: AppColors.of(context).text,
-        minimumSize: const Size(40, 40),
-        fixedSize: const Size(40, 40),
+        minimumSize: const Size(36, 36),
+        fixedSize: const Size(36, 36),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         padding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

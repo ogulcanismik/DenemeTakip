@@ -193,25 +193,16 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
 
     final total = result.isValid ? formatNet(result.totalNet) : '—';
     final hint = result.isValid ? _status : _footerHint(result);
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hairline = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : colors.outline;
 
     return AppFrame(
       maxWidth: 760,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.shellBodyHorizontal,
-              4,
-              AppSpacing.shellBodyHorizontal,
-              12,
-            ),
-            child: EntrySaveBar(
-              total: total,
-              hint: hint,
-              saving: _saving,
-              onSave: _save,
-            ),
-          ),
           Expanded(
             child: FocusTraversalGroup(
               policy: OrderedTraversalPolicy(),
@@ -220,53 +211,74 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.shellBodyHorizontal,
-                  4,
+                  AppSpacing.shellBodyTop + 4,
                   AppSpacing.shellBodyHorizontal,
-                  24,
+                  16,
                 ),
                 children: [
-                  TextField(
-                    controller: _title,
-                    textInputAction: TextInputAction.next,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      labelText: 'Başlık (isteğe bağlı)',
-                      hintText: 'Özdebir Türkiye Geneli 1',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Material(
-                    color: AppColors.of(context).surface,
-                    borderRadius: BorderRadius.circular(14),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: _pickDate,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.calendar_today_outlined,
-                              color: AppColors.of(context).textMuted,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 65,
+                        child: TextField(
+                          controller: _title,
+                          textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: const InputDecoration(
+                            labelText: 'Deneme Başlığı (İsteğe bağlı)',
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
                             ),
-                            const SizedBox(width: 12),
-                            const Text('Tarih'),
-                            const Spacer(),
-                            Text(
-                              formatTurkishDate(_date),
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 35,
+                        child: Material(
+                          color: colors.surfaceHigh,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(color: hairline),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: _pickDate,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today_outlined,
+                                    size: 16,
+                                    color: colors.textMuted,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      formatShortDateWithYear(_date),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 13,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   for (var i = 0; i < exam.sections.length; i++) ...[
                     _SectionCard(
                       definition: exam.sections[i],
@@ -286,13 +298,16 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     data: Theme.of(context)
                         .copyWith(dividerColor: Colors.transparent),
                     child: Material(
-                      color: AppColors.of(context).surface,
-                      borderRadius: BorderRadius.circular(16),
+                      color: colors.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: hairline),
+                      ),
                       child: ExpansionTile(
                         title: const Text('Süre ve zorluk'),
                         subtitle: const Text('İsteğe bağlı'),
-                        iconColor: AppColors.of(context).textMuted,
-                        collapsedIconColor: AppColors.of(context).textMuted,
+                        iconColor: colors.textMuted,
+                        collapsedIconColor: colors.textMuted,
                         childrenPadding: const EdgeInsets.fromLTRB(
                           16,
                           0,
@@ -315,7 +330,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                             const SizedBox(height: 8),
                             Text(
                               'Süre, pozitif bir tam sayı olmalı.',
-                              style: TextStyle(color: AppColors.of(context).amber),
+                              style: TextStyle(color: colors.amber),
                             ),
                           ],
                           const SizedBox(height: 16),
@@ -323,9 +338,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Zorluk',
-                              style: TextStyle(
-                                color: AppColors.of(context).textMuted,
-                              ),
+                              style: TextStyle(color: colors.textMuted),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -352,6 +365,12 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 ],
               ),
             ),
+          ),
+          EntrySaveBar(
+            total: total,
+            hint: hint,
+            saving: _saving,
+            onSave: _save,
           ),
         ],
       ),
@@ -398,22 +417,6 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final net = computed == null ? '—' : formatNet(computed!.net);
     final empty = computed == null ? '—' : '${computed!.emptyCount}';
-    final wide = MediaQuery.sizeOf(context).width >= 640;
-
-    final correctField = CountField(
-      controller: correct,
-      focusNode: correctFocus,
-      label: 'Doğru',
-      order: order.toDouble(),
-      onStep: onStepCorrect,
-    );
-    final incorrectField = CountField(
-      controller: incorrect,
-      focusNode: incorrectFocus,
-      label: 'Yanlış',
-      order: order + 1,
-      onStep: onStepIncorrect,
-    );
 
     return SurfaceCard(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -454,20 +457,30 @@ class _SectionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          if (wide)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: correctField),
-                const SizedBox(width: 12),
-                Expanded(child: incorrectField),
-              ],
-            )
-          else ...[
-            correctField,
-            const SizedBox(height: 8),
-            incorrectField,
-          ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: CountField(
+                  controller: correct,
+                  focusNode: correctFocus,
+                  label: 'Doğru',
+                  order: order.toDouble(),
+                  onStep: onStepCorrect,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: CountField(
+                  controller: incorrect,
+                  focusNode: incorrectFocus,
+                  label: 'Yanlış',
+                  order: order + 1,
+                  onStep: onStepIncorrect,
+                ),
+              ),
+            ],
+          ),
           if (issue != null) ...[
             const SizedBox(height: 6),
             Text(
@@ -506,41 +519,80 @@ class EntrySaveBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SurfaceCard(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hairline = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : colors.outline;
+
+    return Material(
+      color: colors.background,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: hairline)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.shellBodyHorizontal,
+            10,
+            AppSpacing.shellBodyHorizontal,
+            10,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Toplam net',
-                style: TextStyle(fontSize: 14, color: AppColors.of(context).textMuted),
-              ),
-              const Spacer(),
-              Text(
-                total,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.of(context).emerald,
-                ).data,
+              if (hint != null) ...[
+                Text(
+                  hint!,
+                  style: TextStyle(color: colors.amber, height: 1.3, fontSize: 12),
+                ),
+                const SizedBox(height: 6),
+              ],
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Toplam Net',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          total,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: colors.emerald,
+                            height: 1.1,
+                          ).data,
+                        ),
+                      ],
+                    ),
+                  ),
+                  FilledButton(
+                    onPressed: saving ? null : onSave,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: Text(saving ? 'Kaydediliyor…' : 'Kaydet'),
+                  ),
+                ],
               ),
             ],
           ),
-          if (hint != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              hint!,
-              style: TextStyle(color: AppColors.of(context).amber, height: 1.3),
-            ),
-          ],
-          const SizedBox(height: 8),
-          FilledButton(
-            onPressed: saving ? null : onSave,
-            child: Text(saving ? 'Kaydediliyor…' : 'Denemeyi kaydet'),
-          ),
-        ],
+        ),
       ),
     );
   }

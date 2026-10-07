@@ -35,3 +35,8 @@ String formatTurkishDate(DateTime date) {
 String formatShortDate(DateTime date) {
   return '${date.day} ${_shortMonths[date.month - 1]}';
 }
+
+/// Short month + year, e.g. "8 Eki 2026".
+String formatShortDateWithYear(DateTime date) {
+  return '${date.day} ${_shortMonths[date.month - 1]} ${date.year}';
+}
