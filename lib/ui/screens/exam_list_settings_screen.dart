@@ -23,9 +23,7 @@ class _ExamListSettingsScreenState
   @override
   void initState() {
     super.initState();
-    _selected = Set<String>.from(
-      ref.read(settingsProvider).enabledExamTypeIds,
-    );
+    _selected = Set<String>.from(ref.read(settingsProvider).enabledExamTypeIds);
   }
 
   Future<void> _save() async {
@@ -67,15 +65,6 @@ class _ExamListSettingsScreenState
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Açık, koyu veya cihaz ayarını kullan.',
-                    style: TextStyle(
-                      color: colors.textMuted,
-                      fontSize: 15,
-                      height: 1.4,
-                    ),
-                  ),
                   const SizedBox(height: 12),
                   SegmentedButton<AppThemeMode>(
                     segments: [
@@ -109,7 +98,7 @@ class _ExamListSettingsScreenState
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Kapattığın sınavlar üst çubukta görünmez. Kayıtlı denemeler silinmez; tekrar açınca geçmiş yerinde kalır.',
+                    'Kapattığın sınavlar üst çubukta görünmez. Kayıtlı denemeler silinmez.',
                     style: TextStyle(
                       color: colors.textMuted,
                       fontSize: 15,
@@ -180,9 +169,7 @@ class _ExamToggleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     return Material(
-      color: selected
-          ? colors.indigo.withValues(alpha: 0.18)
-          : colors.surface,
+      color: selected ? colors.indigo.withValues(alpha: 0.18) : colors.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
