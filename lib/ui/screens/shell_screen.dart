@@ -6,6 +6,7 @@ import 'package:deneme_takip/ui/screens/exam_list_settings_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ShellScreen extends ConsumerStatefulWidget {
   const ShellScreen({super.key});
@@ -105,7 +106,7 @@ class _ExamSwitcher extends ConsumerWidget {
               value: exam.id,
               child: Text(
                 exam.name,
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   color: AppColors.of(context).text,
                   fontWeight: FontWeight.w700,
                 ),
@@ -123,7 +124,7 @@ class _ExamSwitcher extends ConsumerWidget {
               child: Text(
                 active.name,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),

@@ -3,7 +3,7 @@ import 'package:deneme_takip/domain/exam_type.dart';
 abstract final class ExamRegistry {
   static const yksTyt = ExamType(
     id: 'yks_tyt',
-    name: 'YKS - TYT',
+    name: 'TYT',
     penaltyDivisor: 4,
     defaultTargetNet: 90,
     sections: [
