@@ -60,7 +60,7 @@ class DetailScreen extends ConsumerWidget {
                 fontWeight: FontWeight.w700,
                 color: AppColors.of(context).emerald,
                 height: 1.1,
-              ),
+              ).data,
             ),
             Text(
               'Toplam net',
@@ -178,7 +178,7 @@ class _Stat extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: emphasize ? AppColors.of(context).emerald : AppColors.of(context).text,
-            ),
+            ).data,
           ),
         ],
       ),

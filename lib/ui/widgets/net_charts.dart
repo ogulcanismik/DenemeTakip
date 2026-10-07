@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 TextStyle _axisStyle(Color muted) =>
     TextStyle(color: muted, fontSize: 11);
 
+TextStyle _netAxisStyle(Color muted) =>
+    TextStyle(color: muted, fontSize: 11).data;
+
 /// Hide the padded axis max when it is not a clean interval tick (e.g. 116,69).
 Widget _leftAxisTitle(double value, TitleMeta meta, TextStyle style) {
   final atMax = (value - meta.max).abs() < 1e-6;
@@ -38,6 +41,7 @@ class TotalNetChart extends StatelessWidget {
     if (entries.isEmpty) return const SizedBox.shrink();
 
     final axisStyle = _axisStyle(AppColors.of(context).textMuted);
+    final netAxisStyle = _netAxisStyle(AppColors.of(context).textMuted);
     var maxValue = target;
     var minValue = 0.0;
     for (final entry in entries) {
@@ -80,7 +84,7 @@ class TotalNetChart extends StatelessWidget {
                     color: AppColors.of(context).indigo,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                  ),
+                  ).data,
                   labelResolver: (line) => 'Hedef ${formatNet(line.y)}',
                 ),
               ),
@@ -97,7 +101,8 @@ class TotalNetChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 42,
-                getTitlesWidget: (value, meta) => _leftAxisTitle(value, meta, axisStyle),
+                getTitlesWidget: (value, meta) =>
+                    _leftAxisTitle(value, meta, netAxisStyle),
               ),
             ),
             bottomTitles: AxisTitles(
@@ -134,7 +139,7 @@ class TotalNetChart extends StatelessWidget {
                       TextStyle(
                         color: AppColors.of(context).text,
                         fontWeight: FontWeight.w700,
-                      ),
+                      ).data,
                     ),
                 ];
               },
@@ -188,6 +193,7 @@ class SectionNetChart extends StatelessWidget {
     final minY = minValue < 0 ? minValue * 1.2 : 0.0;
     final rodWidth = exam.sections.length > 4 ? 8.0 : 12.0;
     final axisStyle = _axisStyle(AppColors.of(context).textMuted);
+    final netAxisStyle = _netAxisStyle(AppColors.of(context).textMuted);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +230,7 @@ class SectionNetChart extends StatelessWidget {
                         color: AppColors.of(context).text,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
-                      ),
+                      ).data,
                     );
                   },
                 ),
@@ -240,7 +246,8 @@ class SectionNetChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 36,
-                    getTitlesWidget: (value, meta) => _leftAxisTitle(value, meta, axisStyle),
+                    getTitlesWidget: (value, meta) =>
+                        _leftAxisTitle(value, meta, netAxisStyle),
                   ),
                 ),
                 bottomTitles: AxisTitles(
@@ -355,6 +362,7 @@ class NetTrendChart extends StatelessWidget {
     final colors = AppColors.of(context);
     final resolvedLine = lineColor ?? colors.emerald;
     final axisStyle = _axisStyle(colors.textMuted);
+    final netAxisStyle = _netAxisStyle(colors.textMuted);
     final trend = trendValues;
     final hasTrend =
         trend != null && trend.length == values.length && trend.isNotEmpty;
@@ -410,7 +418,7 @@ class NetTrendChart extends StatelessWidget {
                           color: AppColors.of(context).indigo,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                        ),
+                        ).data,
                         labelResolver: (line) => 'Hedef ${formatNet(line.y)}',
                       ),
                     ),
@@ -427,7 +435,8 @@ class NetTrendChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 42,
-                getTitlesWidget: (value, meta) => _leftAxisTitle(value, meta, axisStyle),
+                getTitlesWidget: (value, meta) =>
+                    _leftAxisTitle(value, meta, netAxisStyle),
               ),
             ),
             bottomTitles: AxisTitles(
@@ -464,7 +473,7 @@ class NetTrendChart extends StatelessWidget {
                       TextStyle(
                         color: AppColors.of(context).text,
                         fontWeight: FontWeight.w700,
-                      ),
+                      ).data,
                     ),
                 ];
               },

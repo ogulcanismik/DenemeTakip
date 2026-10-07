@@ -471,10 +471,10 @@ class _FormPerformanceCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       formAvg == null ? '—' : formatNet(formAvg!),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
-                      ),
+                      ).data,
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -546,7 +546,7 @@ class _FormPerformanceCard extends StatelessWidget {
           color: color,
           fontWeight: FontWeight.w700,
           fontSize: 13,
-        ),
+        ).data,
       ),
     );
   }
@@ -585,7 +585,7 @@ class _RangeTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700).data,
           ),
           const SizedBox(height: 2),
           Text(
@@ -736,7 +736,7 @@ class _ProgressRow extends StatelessWidget {
             ),
             Text(
               labelPct,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: const TextStyle(fontWeight: FontWeight.w700).data,
             ),
           ],
         ),

@@ -106,7 +106,7 @@ class _CountFieldState extends State<CountField> {
                     fontWeight: FontWeight.w700,
                     color: AppColors.of(context).text,
                     height: 1.2,
-                  ),
+                  ).data,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\-]')),
                   ],

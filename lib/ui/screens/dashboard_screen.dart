@@ -130,7 +130,7 @@ class _TargetCard extends StatelessWidget {
                   color: AppColors.of(context).indigo,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                ),
+                ).data,
               ),
               const SizedBox(width: 8),
               Icon(Icons.edit_outlined, color: AppColors.of(context).textMuted),
@@ -194,6 +194,8 @@ class _TargetDialogState extends State<_TargetDialog> {
             controller: _controller,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)
+                .data,
             decoration: const InputDecoration(labelText: 'Hedef'),
             onSubmitted: (_) => _submit(),
           ),
@@ -268,7 +270,7 @@ class _HistoryTile extends StatelessWidget {
           color: AppColors.of(context).emerald,
           fontSize: 20,
           fontWeight: FontWeight.w700,
-        ),
+        ).data,
       ),
       onTap: () {
         Navigator.of(context).push(

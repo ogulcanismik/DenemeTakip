@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+/// Space Grotesk for nets, KPIs, counters, and other numeric displays.
+extension AppDataFont on TextStyle {
+  TextStyle get data => GoogleFonts.spaceGrotesk(textStyle: this);
+}
 
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
@@ -162,6 +168,39 @@ ThemeData _buildDenemeTheme(AppColors colors) {
           surfaceContainerHighest: colors.surfaceHigh,
         );
 
+  final textTheme = TextTheme(
+    headlineMedium: GoogleFonts.nunito(
+      fontSize: 32,
+      fontWeight: FontWeight.w700,
+      height: 1.15,
+      color: colors.text,
+    ),
+    titleLarge: GoogleFonts.nunito(
+      fontSize: 22,
+      fontWeight: FontWeight.w700,
+      color: colors.text,
+    ),
+    titleMedium: GoogleFonts.nunito(
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      color: colors.text,
+    ),
+    bodyLarge: GoogleFonts.nunito(
+      fontSize: 16,
+      height: 1.4,
+      color: colors.text,
+    ),
+    bodyMedium: GoogleFonts.nunito(
+      fontSize: 14,
+      height: 1.4,
+      color: colors.textMuted,
+    ),
+    labelLarge: GoogleFonts.nunito(
+      fontSize: 16,
+      fontWeight: FontWeight.w700,
+    ),
+  );
+
   return ThemeData(
     useMaterial3: true,
     brightness: isDark ? Brightness.dark : Brightness.light,
@@ -169,38 +208,16 @@ ThemeData _buildDenemeTheme(AppColors colors) {
     scaffoldBackgroundColor: colors.background,
     splashFactory: InkSparkle.splashFactory,
     extensions: [colors],
-    textTheme: TextTheme(
-      headlineMedium: TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.w700,
-        height: 1.15,
-        color: colors.text,
-      ),
-      titleLarge: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        color: colors.text,
-      ),
-      titleMedium: TextStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.w600,
-        color: colors.text,
-      ),
-      bodyLarge: TextStyle(fontSize: 16, height: 1.4, color: colors.text),
-      bodyMedium: TextStyle(
-        fontSize: 14,
-        height: 1.4,
-        color: colors.textMuted,
-      ),
-      labelLarge: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-    ),
+    fontFamily: GoogleFonts.nunito().fontFamily,
+    textTheme: textTheme,
+    primaryTextTheme: textTheme,
     appBarTheme: AppBarTheme(
       backgroundColor: colors.background,
       foregroundColor: colors.text,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: TextStyle(
+      titleTextStyle: GoogleFonts.nunito(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: colors.text,
@@ -211,7 +228,7 @@ ThemeData _buildDenemeTheme(AppColors colors) {
       height: 72,
       indicatorColor: colors.indigo.withValues(alpha: isDark ? 0.28 : 0.16),
       labelTextStyle: WidgetStateProperty.all(
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600),
       ),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
@@ -226,7 +243,10 @@ ThemeData _buildDenemeTheme(AppColors colors) {
         minimumSize: const Size.fromHeight(56),
         backgroundColor: colors.indigo,
         foregroundColor: colors.indigoInk,
-        textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        textStyle: GoogleFonts.nunito(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
@@ -235,15 +255,16 @@ ThemeData _buildDenemeTheme(AppColors colors) {
         minimumSize: const Size.fromHeight(56),
         foregroundColor: colors.text,
         side: BorderSide(color: colors.outline),
+        textStyle: GoogleFonts.nunito(fontWeight: FontWeight.w600),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: colors.surfaceHigh,
-      labelStyle: TextStyle(color: colors.textMuted),
-      hintStyle: TextStyle(color: colors.textMuted),
-      floatingLabelStyle: TextStyle(color: colors.indigo),
+      labelStyle: GoogleFonts.nunito(color: colors.textMuted),
+      hintStyle: GoogleFonts.nunito(color: colors.textMuted),
+      floatingLabelStyle: GoogleFonts.nunito(color: colors.indigo),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -266,7 +287,7 @@ ThemeData _buildDenemeTheme(AppColors colors) {
     chipTheme: ChipThemeData(
       backgroundColor: colors.surfaceHigh,
       selectedColor: colors.indigo.withValues(alpha: isDark ? 0.35 : 0.18),
-      labelStyle: TextStyle(
+      labelStyle: GoogleFonts.nunito(
         color: colors.text,
         fontWeight: FontWeight.w700,
       ),
@@ -290,6 +311,9 @@ ThemeData _buildDenemeTheme(AppColors colors) {
           return colors.surfaceHigh;
         }),
         side: WidgetStateProperty.all(BorderSide(color: colors.outline)),
+        textStyle: WidgetStateProperty.all(
+          GoogleFonts.nunito(fontWeight: FontWeight.w600),
+        ),
       ),
     ),
   );
