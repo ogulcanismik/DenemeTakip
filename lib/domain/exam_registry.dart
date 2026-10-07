@@ -16,7 +16,7 @@ abstract final class ExamRegistry {
 
   static const yksAytSay = ExamType(
     id: 'yks_ayt_say',
-    name: 'YKS - AYT (Sayısal)',
+    name: 'AYT SAY',
     penaltyDivisor: 4,
     defaultTargetNet: 70,
     sections: [
@@ -29,7 +29,7 @@ abstract final class ExamRegistry {
 
   static const yksAytEa = ExamType(
     id: 'yks_ayt_ea',
-    name: 'YKS - AYT (Eşit Ağırlık)',
+    name: 'AYT EA',
     penaltyDivisor: 4,
     defaultTargetNet: 65,
     sections: [
@@ -46,7 +46,7 @@ abstract final class ExamRegistry {
 
   static const yksAytSoz = ExamType(
     id: 'yks_ayt_soz',
-    name: 'YKS - AYT (Sözel)',
+    name: 'AYT SÖZ',
     penaltyDivisor: 4,
     defaultTargetNet: 60,
     sections: [
