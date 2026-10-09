@@ -214,9 +214,9 @@ class _AnalysisPage extends StatelessWidget {
     final allValues = [
       for (final entry in oldestFirst) _netFor(entry, sectionId),
     ];
-    final formAvg = AnalysisEngine.calculateRollingAverage(
-      allValues,
-      _formWindow,
+    // Newest-first for recency weights (Form Düzeyi / vs-average delta).
+    final formAvg = AnalysisEngine.calculateRecencyWeightedAverage(
+      allValues.reversed.toList(),
     );
     final latest = allValues.last;
     final deltaPct = formAvg == null
@@ -470,9 +470,7 @@ class _FormPerformanceCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      examCount >= 5
-                          ? 'Son 5 deneme ort.'
-                          : 'Mevcut deneme ort.',
+                      'Son denemeler daha ağırlıklı',
                       style: TextStyle(
                         color: AppColors.of(context).textMuted,
                         fontSize: 12,

@@ -20,6 +20,24 @@ abstract final class AnalysisEngine {
     return sum / window.length;
   }
 
+  /// Recency-weighted mean for current form. [newestFirst][0] is newest.
+  ///
+  /// `weight(i) = max(0, 1.0 - 0.1 * i)` — newest=1.0 … 11th (i=10)=0
+  /// (older ignored). Returns `Σ(v·w) / Σ(w)` when `Σ(w) > 0`.
+  static double? calculateRecencyWeightedAverage(List<double> newestFirst) {
+    if (newestFirst.isEmpty) return null;
+    var weightedSum = 0.0;
+    var weightSum = 0.0;
+    for (var i = 0; i < newestFirst.length; i++) {
+      final w = 1.0 - 0.1 * i;
+      if (w <= 0) break;
+      weightedSum += newestFirst[i] * w;
+      weightSum += w;
+    }
+    if (weightSum <= 0) return null;
+    return weightedSum / weightSum;
+  }
+
   /// Percent change of [current] vs [baseline]: `((current - baseline) / |baseline|) * 100`.
   /// Returns `null` when [baseline] is 0 and [current] is non-zero (undefined %).
   static double? calculateDeltaPercentage(double current, double baseline) {

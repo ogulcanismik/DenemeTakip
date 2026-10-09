@@ -23,6 +23,34 @@ void main() {
     });
   });
 
+  group('calculateRecencyWeightedAverage', () {
+    test('returns null for empty', () {
+      expect(AnalysisEngine.calculateRecencyWeightedAverage([]), isNull);
+    });
+
+    test('single item equals itself', () {
+      expect(AnalysisEngine.calculateRecencyWeightedAverage([42]), 42);
+    });
+
+    test('weights newest higher (1.0, 0.9, …)', () {
+      // newestFirst: 10 @1.0, 0 @0.9 → (10+0)/(1.0+0.9) = 10/1.9
+      expect(
+        AnalysisEngine.calculateRecencyWeightedAverage([10, 0]),
+        closeTo(10 / 1.9, 1e-9),
+      );
+    });
+
+    test('11th exam (i=10) has zero weight and is ignored', () {
+      // 10 contributing: 1.0+0.9+…+0.1 = 5.5; values all 2 except ignored 11th
+      final values = List<double>.filled(11, 2);
+      values[10] = 999;
+      expect(
+        AnalysisEngine.calculateRecencyWeightedAverage(values),
+        closeTo(2, 1e-9),
+      );
+    });
+  });
+
   group('calculateDeltaPercentage', () {
     test('computes percent change vs baseline', () {
       expect(
