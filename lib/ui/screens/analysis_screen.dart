@@ -496,44 +496,48 @@ class _FormPerformanceCard extends StatelessWidget {
                 child: Text(
                   formAvg == null ? '—' : formatNet(formAvg!),
                   style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 40,
+                    fontWeight: FontWeight.w800,
+                    height: 1.05,
+                    letterSpacing: -0.5,
                   ).data,
                 ),
               ),
               ?badge,
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: Center(
-                  child: _DeltaStyleChip(
-                    text: _formatAvg(weightedCorrect),
-                    color: colors.emerald,
-                  ),
+                child: _DeltaStyleChip(
+                  text: _formatAvg(weightedCorrect),
+                  color: colors.emerald,
                 ),
               ),
+              const SizedBox(width: 8),
               Expanded(
-                child: Center(
-                  child: _DeltaStyleChip(
-                    text: _formatAvg(weightedEmpty),
-                    color: colors.textMuted,
-                  ),
+                child: _DeltaStyleChip(
+                  text: _formatAvg(weightedEmpty),
+                  color: colors.textMuted,
                 ),
               ),
+              const SizedBox(width: 8),
               Expanded(
-                child: Center(
-                  child: _DeltaStyleChip(
-                    text: _formatAvg(weightedIncorrect),
-                    color: _incorrectCoral,
-                  ),
+                child: _DeltaStyleChip(
+                  text: _formatAvg(weightedIncorrect),
+                  color: _incorrectCoral,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: colors.outline.withValues(alpha: 0.55),
+          ),
+          const SizedBox(height: 16),
           Text(
             'Güvenli Net Aralığı',
             style: TextStyle(
@@ -643,17 +647,20 @@ class _DeltaStyleChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         text,
+        textAlign: TextAlign.center,
         style: TextStyle(
           color: color,
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          fontSize: 16,
         ).data,
       ),
     );
