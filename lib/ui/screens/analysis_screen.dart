@@ -302,7 +302,9 @@ class _AnalysisPage extends StatelessWidget {
                 deltaPct: deltaPct,
                 peak: range.peak,
                 floor: range.floor,
-                examCount: oldestFirst.length,
+                weightedCorrect: weightedCounts.correct,
+                weightedEmpty: weightedCounts.empty,
+                weightedIncorrect: weightedCounts.incorrect,
               ),
               const SizedBox(height: 12),
               SurfaceCard(
@@ -341,12 +343,6 @@ class _AnalysisPage extends StatelessWidget {
                       ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              _TacticsCard(
-                weightedCorrect: weightedCounts.correct,
-                weightedEmpty: weightedCounts.empty,
-                weightedIncorrect: weightedCounts.incorrect,
               ),
               const SizedBox(height: 12),
               _InsightCard(insight: insight, sparse: sparse),
@@ -458,18 +454,31 @@ class _FormPerformanceCard extends StatelessWidget {
     required this.deltaPct,
     required this.peak,
     required this.floor,
-    required this.examCount,
+    required this.weightedCorrect,
+    required this.weightedEmpty,
+    required this.weightedIncorrect,
   });
 
   final double? formAvg;
   final double? deltaPct;
   final double? peak;
   final double? floor;
-  final int examCount;
+  final double? weightedCorrect;
+  final double? weightedEmpty;
+  final double? weightedIncorrect;
+
+  /// Soft muted coral — not bright alarm red.
+  static const _incorrectCoral = Color(0xFFD4847A);
+
+  static String _formatAvg(double? weighted) {
+    if (weighted == null) return '—';
+    return formatNet(weighted);
+  }
 
   @override
   Widget build(BuildContext context) {
     final badge = _trendBadge(context, deltaPct);
+    final colors = AppColors.of(context);
 
     return SurfaceCard(
       child: Column(
@@ -479,69 +488,74 @@ class _FormPerformanceCard extends StatelessWidget {
             'Form & Performans',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Form Düzeyi',
-                      style: TextStyle(
-                        color: AppColors.of(context).textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      formAvg == null ? '—' : formatNet(formAvg!),
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                      ).data,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Son denemeler daha ağırlıklı',
-                      style: TextStyle(
-                        color: AppColors.of(context).textMuted,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  formAvg == null ? '—' : formatNet(formAvg!),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  ).data,
                 ),
               ),
               ?badge,
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: Center(
+                  child: _DeltaStyleChip(
+                    text: _formatAvg(weightedCorrect),
+                    color: colors.emerald,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: _DeltaStyleChip(
+                    text: _formatAvg(weightedEmpty),
+                    color: colors.textMuted,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: _DeltaStyleChip(
+                    text: _formatAvg(weightedIncorrect),
+                    color: _incorrectCoral,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
           Text(
             'Güvenli Net Aralığı',
             style: TextStyle(
-              color: AppColors.of(context).textMuted,
+              color: colors.textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: _RangeTile(
                   label: 'Zirve Net',
                   value: peak == null ? '—' : formatNet(peak!),
-                  caption: 'Tüm geçmiş',
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: _RangeTile(
                   label: 'Taban Net',
                   value: floor == null ? '—' : formatNet(floor!),
-                  caption: examCount >= 5 ? 'Son 5 deneme' : 'Mevcut denemeler',
                 ),
               ),
             ],
@@ -581,20 +595,18 @@ class _RangeTile extends StatelessWidget {
   const _RangeTile({
     required this.label,
     required this.value,
-    required this.caption,
   });
 
   final String label;
   final String value;
-  final String caption;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.of(context).surfaceHigh.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -603,99 +615,25 @@ class _RangeTile extends StatelessWidget {
             label,
             style: TextStyle(
               color: AppColors.of(context).textMuted,
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 17,
               fontWeight: FontWeight.w700,
             ).data,
           ),
-          const SizedBox(height: 2),
-          Text(
-            caption,
-            style: TextStyle(
-              color: AppColors.of(context).textMuted,
-              fontSize: 11,
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _TacticsCard extends StatelessWidget {
-  const _TacticsCard({
-    required this.weightedCorrect,
-    required this.weightedEmpty,
-    required this.weightedIncorrect,
-  });
-
-  final double? weightedCorrect;
-  final double? weightedEmpty;
-  final double? weightedIncorrect;
-
-  /// Soft muted coral — not bright alarm red.
-  static const _incorrectCoral = Color(0xFFD4847A);
-
-  static String _formatAvg(double? weighted) {
-    if (weighted == null) return '—';
-    return formatNet(weighted);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-
-    return SurfaceCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Deneme Stratejin',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: Center(
-                  child: _DeltaStyleChip(
-                    text: _formatAvg(weightedCorrect),
-                    color: colors.emerald,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Center(
-                  child: _DeltaStyleChip(
-                    text: _formatAvg(weightedEmpty),
-                    color: colors.textMuted,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Center(
-                  child: _DeltaStyleChip(
-                    text: _formatAvg(weightedIncorrect),
-                    color: _incorrectCoral,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Matches Form Düzeyi trend badge: soft tinted pill, bold numeric.
+/// Matches Form trend badge: soft tinted pill, bold numeric.
 class _DeltaStyleChip extends StatelessWidget {
   const _DeltaStyleChip({required this.text, required this.color});
 
