@@ -38,6 +38,23 @@ abstract final class AnalysisEngine {
     return weightedSum / weightSum;
   }
 
+  /// Recency-weighted averages of per-exam correct / incorrect / empty counts.
+  ///
+  /// Lists are parallel and newest-first. Empty inputs should already be
+  /// `questionCount − D − Y` (or stored empty) for the selected scope.
+  static ({double? correct, double? incorrect, double? empty})
+      calculateWeightedCountAverages({
+    required List<double> correctNewestFirst,
+    required List<double> incorrectNewestFirst,
+    required List<double> emptyNewestFirst,
+  }) {
+    return (
+      correct: calculateRecencyWeightedAverage(correctNewestFirst),
+      incorrect: calculateRecencyWeightedAverage(incorrectNewestFirst),
+      empty: calculateRecencyWeightedAverage(emptyNewestFirst),
+    );
+  }
+
   /// Percent change of [current] vs [baseline]: `((current - baseline) / |baseline|) * 100`.
   /// Returns `null` when [baseline] is 0 and [current] is non-zero (undefined %).
   static double? calculateDeltaPercentage(double current, double baseline) {

@@ -51,6 +51,20 @@ void main() {
     });
   });
 
+  group('calculateWeightedCountAverages', () {
+    test('weights correct / incorrect / empty newest-first', () {
+      // newest @1.0, older @0.9 → Σw = 1.9
+      final avgs = AnalysisEngine.calculateWeightedCountAverages(
+        correctNewestFirst: [30, 20],
+        incorrectNewestFirst: [5, 10],
+        emptyNewestFirst: [5, 10],
+      );
+      expect(avgs.correct, closeTo(48 / 1.9, 1e-9));
+      expect(avgs.incorrect, closeTo(14 / 1.9, 1e-9));
+      expect(avgs.empty, closeTo(14 / 1.9, 1e-9));
+    });
+  });
+
   group('calculateDeltaPercentage', () {
     test('computes percent change vs baseline', () {
       expect(

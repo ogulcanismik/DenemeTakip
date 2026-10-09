@@ -236,12 +236,23 @@ class _AnalysisPage extends StatelessWidget {
         ? AnalysisEngine.movingAverageSeries(chartValues, _maWindow)
         : null;
 
-    // Ratios: all exams for active exam type in selected scope.
-    final counts = _aggregateCounts(exam, oldestFirst, sectionId);
-    final ratios = AnalysisEngine.calculateRatios(
-      correct: counts.correct,
-      incorrect: counts.incorrect,
-      totalQuestions: counts.totalQuestions,
+    // Scope question total is constant per exam config (Genel = all sections).
+    final totalQuestionsInScope = _totalQuestionsInScope(exam, sectionId);
+    // Newest-first D / Y / boş counts for recency-weighted averages.
+    final newestFirst = oldestFirst.reversed.toList();
+    final correctSeries = <double>[];
+    final incorrectSeries = <double>[];
+    final emptySeries = <double>[];
+    for (final entry in newestFirst) {
+      final c = _countsForEntry(exam, entry, sectionId);
+      correctSeries.add(c.correct.toDouble());
+      incorrectSeries.add(c.incorrect.toDouble());
+      emptySeries.add(c.empty.toDouble());
+    }
+    final weightedCounts = AnalysisEngine.calculateWeightedCountAverages(
+      correctNewestFirst: correctSeries,
+      incorrectNewestFirst: incorrectSeries,
+      emptyNewestFirst: emptySeries,
     );
 
     final insightWindowStart = oldestFirst.length > _insightExamWindow
@@ -335,8 +346,10 @@ class _AnalysisPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _TacticsCard(
-                accuracyRate: ratios.accuracyRate,
-                attemptRate: ratios.attemptRate,
+                weightedCorrect: weightedCounts.correct,
+                weightedEmpty: weightedCounts.empty,
+                weightedIncorrect: weightedCounts.incorrect,
+                totalQuestionsInScope: totalQuestionsInScope,
               ),
               const SizedBox(height: 12),
               _InsightCard(insight: insight, sparse: sparse),
@@ -353,6 +366,40 @@ class _AnalysisPage extends StatelessWidget {
       if (section.sectionId == sectionId) return section.calculatedNet;
     }
     return 0;
+  }
+
+  static int _totalQuestionsInScope(ExamType exam, String? sectionId) {
+    var total = 0;
+    for (final def in exam.sections) {
+      if (sectionId != null && def.id != sectionId) continue;
+      total += def.questionCount;
+    }
+    return total;
+  }
+
+  /// Per-deneme D / Y / boş in selected scope. Empty = questionCount − D − Y.
+  static ({int correct, int incorrect, int empty}) _countsForEntry(
+    ExamType exam,
+    DenemeEntry entry,
+    String? sectionId,
+  ) {
+    var correct = 0;
+    var incorrect = 0;
+    var empty = 0;
+    for (final def in exam.sections) {
+      if (sectionId != null && def.id != sectionId) continue;
+      var found = false;
+      for (final section in entry.sections) {
+        if (section.sectionId != def.id) continue;
+        correct += section.correctCount;
+        incorrect += section.incorrectCount;
+        empty += section.emptyCount;
+        found = true;
+        break;
+      }
+      if (!found) empty += def.questionCount;
+    }
+    return (correct: correct, incorrect: incorrect, empty: empty);
   }
 
   static ({int correct, int incorrect, int totalQuestions}) _aggregateCounts(
@@ -595,16 +642,31 @@ class _RangeTile extends StatelessWidget {
 }
 
 class _TacticsCard extends StatelessWidget {
-  const _TacticsCard({required this.accuracyRate, required this.attemptRate});
+  const _TacticsCard({
+    required this.weightedCorrect,
+    required this.weightedEmpty,
+    required this.weightedIncorrect,
+    required this.totalQuestionsInScope,
+  });
 
-  final double? accuracyRate;
-  final double? attemptRate;
+  final double? weightedCorrect;
+  final double? weightedEmpty;
+  final double? weightedIncorrect;
+  final int totalQuestionsInScope;
 
-  static const _accuracyBar = Color(0xFF22C55E);
-  static const _attemptBar = Color(0xFF818CF8);
+  /// Soft muted coral — not bright alarm red.
+  static const _incorrectCoral = Color(0xFFD4847A);
+
+  static String _formatRatio(double? weighted, int totalQ) {
+    if (weighted == null || totalQ <= 0) return '—';
+    return '${formatNet(weighted)} / $totalQ';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final totalQ = totalQuestionsInScope;
+
     return SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -614,145 +676,50 @@ class _TacticsCard extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 14),
-          _ProgressRow(
-            label: 'Doğruluk Oranı',
-            percent: accuracyRate,
-            barColor: _accuracyBar,
-            micro: _accuracyMicro(accuracyRate),
-          ),
-          const SizedBox(height: 16),
-          _ProgressRow(
-            label: 'Cevaplama Oranı',
-            percent: attemptRate,
-            barColor: _attemptBar,
-            micro: _attemptMicro(attemptRate),
+          Row(
+            children: [
+              Expanded(
+                child: _RatioValue(
+                  text: _formatRatio(weightedCorrect, totalQ),
+                  color: colors.emerald,
+                ),
+              ),
+              Expanded(
+                child: _RatioValue(
+                  text: _formatRatio(weightedEmpty, totalQ),
+                  color: colors.textMuted,
+                ),
+              ),
+              Expanded(
+                child: _RatioValue(
+                  text: _formatRatio(weightedIncorrect, totalQ),
+                  color: _incorrectCoral,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
-
-  static String _accuracyMicro(double? accuracy) {
-    if (accuracy == null) return 'Henüz işaretlenen soru yok.';
-    if (accuracy >= 90) {
-      return 'Neredeyse hiç fire vermiyorsun, işaretlediğin sorular çok '
-          'sağlam geliyor.';
-    }
-    if (accuracy >= 70) {
-      final per10 = (accuracy / 10).clamp(0, 10).round();
-      return 'İşaretlediğin her 10 sorudan yaklaşık '
-          '${_turkishAccusativePer10(per10)} doğru.';
-    }
-    return 'Hata payın biraz yüksek; emin olmadığın soruları boş bırakmak '
-        'formunu yükseltebilir.';
-  }
-
-  static String _attemptMicro(double? attempt) {
-    if (attempt == null) return 'Soru sayısı tanımsız.';
-    if (attempt >= 85) {
-      return 'Soruların büyük kısmına ulaştın, boş soru sayın oldukça az.';
-    }
-    if (attempt >= 60) {
-      final per10 = (attempt / 10).clamp(0, 10).round();
-      return 'Her 10 sorudan ${_turkishDativePer10(per10)} cevap verdin; '
-          'kalanlar için süre dengesini gözetebilirsin.';
-    }
-    return 'Soruların önemli bir kısmı boş kalmış; süre yönetimi veya soru '
-        'eleme hızına odaklanabilirsin.';
-  }
-
-  /// Accusative for 0–10 (e.g. 8'i, 9'u) — avoids awkward "10'i".
-  static String _turkishAccusativePer10(int n) {
-    const suffixes = <int, String>{
-      0: "'ı",
-      1: "'i",
-      2: "'yi",
-      3: "'ü",
-      4: "'ü",
-      5: "'i",
-      6: "'yı",
-      7: "'yi",
-      8: "'i",
-      9: "'u",
-      10: "'u",
-    };
-    return '$n${suffixes[n] ?? "'u"}';
-  }
-
-  /// Dative for 0–10 (e.g. 8'ine, 9'una).
-  static String _turkishDativePer10(int n) {
-    const suffixes = <int, String>{
-      0: "'ına",
-      1: "'ine",
-      2: "'sine",
-      3: "'üne",
-      4: "'üne",
-      5: "'ine",
-      6: "'sına",
-      7: "'sine",
-      8: "'ine",
-      9: "'una",
-      10: "'una",
-    };
-    return '$n${suffixes[n] ?? "'una"}';
-  }
 }
 
-class _ProgressRow extends StatelessWidget {
-  const _ProgressRow({
-    required this.label,
-    required this.percent,
-    required this.micro,
-    required this.barColor,
-  });
+class _RatioValue extends StatelessWidget {
+  const _RatioValue({required this.text, required this.color});
 
-  final String label;
-  final double? percent;
-  final String micro;
-  final Color barColor;
+  final String text;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final value = percent == null ? 0.0 : (percent! / 100).clamp(0.0, 1.0);
-    final labelPct = percent == null ? '—' : '%${percent!.round()}';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-            Text(
-              labelPct,
-              style: const TextStyle(fontWeight: FontWeight.w700).data,
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: LinearProgressIndicator(
-            value: percent == null ? null : value,
-            minHeight: 8,
-            backgroundColor: AppColors.of(context).surfaceHigh,
-            color: barColor,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          micro,
-          style: TextStyle(
-            color: AppColors.of(context).textMuted,
-            fontSize: 12,
-            height: 1.35,
-          ),
-        ),
-      ],
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: color,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+      ).data,
     );
   }
 }
