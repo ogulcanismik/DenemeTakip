@@ -214,7 +214,7 @@ class _AnalysisPage extends StatelessWidget {
     final allValues = [
       for (final entry in oldestFirst) _netFor(entry, sectionId),
     ];
-    // Newest-first for recency weights (Form Düzeyi / vs-average delta).
+    // Newest-first for recency weights (form average / vs-average delta).
     final formAvg = AnalysisEngine.calculateRecencyWeightedAverage(
       allValues.reversed.toList(),
     );
