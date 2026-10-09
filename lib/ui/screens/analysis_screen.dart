@@ -236,8 +236,6 @@ class _AnalysisPage extends StatelessWidget {
         ? AnalysisEngine.movingAverageSeries(chartValues, _maWindow)
         : null;
 
-    // Scope question total is constant per exam config (Genel = all sections).
-    final totalQuestionsInScope = _totalQuestionsInScope(exam, sectionId);
     // Newest-first D / Y / boş counts for recency-weighted averages.
     final newestFirst = oldestFirst.reversed.toList();
     final correctSeries = <double>[];
@@ -349,7 +347,6 @@ class _AnalysisPage extends StatelessWidget {
                 weightedCorrect: weightedCounts.correct,
                 weightedEmpty: weightedCounts.empty,
                 weightedIncorrect: weightedCounts.incorrect,
-                totalQuestionsInScope: totalQuestionsInScope,
               ),
               const SizedBox(height: 12),
               _InsightCard(insight: insight, sparse: sparse),
@@ -366,15 +363,6 @@ class _AnalysisPage extends StatelessWidget {
       if (section.sectionId == sectionId) return section.calculatedNet;
     }
     return 0;
-  }
-
-  static int _totalQuestionsInScope(ExamType exam, String? sectionId) {
-    var total = 0;
-    for (final def in exam.sections) {
-      if (sectionId != null && def.id != sectionId) continue;
-      total += def.questionCount;
-    }
-    return total;
   }
 
   /// Per-deneme D / Y / boş in selected scope. Empty = questionCount − D − Y.
@@ -646,26 +634,23 @@ class _TacticsCard extends StatelessWidget {
     required this.weightedCorrect,
     required this.weightedEmpty,
     required this.weightedIncorrect,
-    required this.totalQuestionsInScope,
   });
 
   final double? weightedCorrect;
   final double? weightedEmpty;
   final double? weightedIncorrect;
-  final int totalQuestionsInScope;
 
   /// Soft muted coral — not bright alarm red.
   static const _incorrectCoral = Color(0xFFD4847A);
 
-  static String _formatRatio(double? weighted, int totalQ) {
-    if (weighted == null || totalQ <= 0) return '—';
-    return '${formatNet(weighted)} / $totalQ';
+  static String _formatAvg(double? weighted) {
+    if (weighted == null) return '—';
+    return formatNet(weighted);
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final totalQ = totalQuestionsInScope;
 
     return SurfaceCard(
       child: Column(
@@ -679,21 +664,27 @@ class _TacticsCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _RatioValue(
-                  text: _formatRatio(weightedCorrect, totalQ),
-                  color: colors.emerald,
+                child: Center(
+                  child: _DeltaStyleChip(
+                    text: _formatAvg(weightedCorrect),
+                    color: colors.emerald,
+                  ),
                 ),
               ),
               Expanded(
-                child: _RatioValue(
-                  text: _formatRatio(weightedEmpty, totalQ),
-                  color: colors.textMuted,
+                child: Center(
+                  child: _DeltaStyleChip(
+                    text: _formatAvg(weightedEmpty),
+                    color: colors.textMuted,
+                  ),
                 ),
               ),
               Expanded(
-                child: _RatioValue(
-                  text: _formatRatio(weightedIncorrect, totalQ),
-                  color: _incorrectCoral,
+                child: Center(
+                  child: _DeltaStyleChip(
+                    text: _formatAvg(weightedIncorrect),
+                    color: _incorrectCoral,
+                  ),
                 ),
               ),
             ],
@@ -704,22 +695,29 @@ class _TacticsCard extends StatelessWidget {
   }
 }
 
-class _RatioValue extends StatelessWidget {
-  const _RatioValue({required this.text, required this.color});
+/// Matches Form Düzeyi trend badge: soft tinted pill, bold numeric.
+class _DeltaStyleChip extends StatelessWidget {
+  const _DeltaStyleChip({required this.text, required this.color});
 
   final String text;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        color: color,
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-      ).data,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+        ).data,
+      ),
     );
   }
 }
