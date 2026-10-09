@@ -1,6 +1,6 @@
 # Deneme Takip
 
-Offline tracker for Turkish mock exams (deneme): YKS (TYT / AYT / YDT), KPSS, LGS, MSÜ, ALES, DGS, and HMGS. On first launch you multi-select which exams you use; the top switcher only lists those. Enter doğru and yanlış; boş and net are calculated. Records stay on the device in Hive. The interface is Turkish.
+Offline tracker for Turkish mock exams (deneme): YKS (TYT / AYT / YDT), KPSS, LGS, MSÜ, ALES, DGS, and HMGS, plus user-defined exam configs. On first launch you multi-select which exams you use; the top switcher only lists those. Settings → “Özel sınav oluştur” builds custom exams (topics, penalty divisor, hedef net). Enter doğru and yanlış; boş and net are calculated. Records stay on the device in Hive. The interface is Turkish.
 
 ## Run
 

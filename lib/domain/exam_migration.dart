@@ -37,6 +37,7 @@ abstract final class ExamMigration {
   }
 
   static AppSettings migrateSettings(AppSettings settings) {
+    // Customs must already be synced onto ExamRegistry before this runs.
     final migratedTargets = <String, double>{
       for (final exam in ExamRegistry.all) exam.id: exam.defaultTargetNet,
     };
@@ -71,6 +72,7 @@ abstract final class ExamMigration {
       activeExamTypeId: nextActive,
       enabledExamTypeIds: enabled,
       targetNets: migratedTargets,
+      customExams: settings.customExams,
       themeMode: settings.themeMode,
     );
   }

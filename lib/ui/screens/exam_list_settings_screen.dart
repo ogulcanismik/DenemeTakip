@@ -2,6 +2,7 @@ import 'package:deneme_takip/domain/app_settings.dart';
 import 'package:deneme_takip/domain/exam_registry.dart';
 import 'package:deneme_takip/domain/exam_type.dart';
 import 'package:deneme_takip/state/providers.dart';
+import 'package:deneme_takip/ui/screens/custom_exam_builder_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,10 +43,69 @@ class _ExamListSettingsScreenState
     Navigator.pop(context);
   }
 
+  Future<void> _openBuilder({ExamType? existing}) async {
+    final result = await Navigator.of(context).push<ExamType>(
+      MaterialPageRoute(
+        builder: (context) => CustomExamBuilderScreen(existing: existing),
+      ),
+    );
+    if (!mounted || result == null) return;
+    setState(() {
+      _selected.add(result.id);
+      _hint = null;
+    });
+  }
+
+  Future<void> _confirmDelete(ExamType exam) async {
+    final colors = AppColors.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Özel sınavı sil'),
+          content: Text(
+            '"${exam.name}" katalogdan kaldırılacak. Bu sınava ait eski '
+            'denemeler silinmez; yalnızca yeni giriş ve listede görünmez.',
+            style: TextStyle(color: colors.textMuted, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Vazgeç'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Sil'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+
+    final ok = await ref
+        .read(settingsProvider.notifier)
+        .deleteCustomExam(exam.id);
+    if (!mounted) return;
+    if (!ok) {
+      setState(
+        () => _hint =
+            'Son açık sınav silinemez. Önce başka bir sınavı aç, sonra sil.',
+      );
+      return;
+    }
+    setState(() {
+      _selected.remove(exam.id);
+      _hint = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final themeMode = ref.watch(settingsProvider).themeMode;
+    final settings = ref.watch(settingsProvider);
+    final themeMode = settings.themeMode;
+    final customs = settings.customExams;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sınav listesini düzenle')),
@@ -105,8 +165,14 @@ class _ExamListSettingsScreenState
                       height: 1.4,
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () => _openBuilder(),
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('Özel sınav oluştur'),
+                  ),
                   const SizedBox(height: 20),
-                  for (final exam in ExamRegistry.all) ...[
+                  for (final exam in ExamRegistry.builtins) ...[
                     _ExamToggleTile(
                       exam: exam,
                       selected: _selected.contains(exam.id),
@@ -122,6 +188,37 @@ class _ExamListSettingsScreenState
                       },
                     ),
                     const SizedBox(height: 10),
+                  ],
+                  if (customs.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      'Özel sınavlar',
+                      style: TextStyle(
+                        color: colors.text,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    for (final exam in customs) ...[
+                      _ExamToggleTile(
+                        exam: exam,
+                        selected: _selected.contains(exam.id),
+                        onToggle: () {
+                          setState(() {
+                            if (_selected.contains(exam.id)) {
+                              _selected.remove(exam.id);
+                            } else {
+                              _selected.add(exam.id);
+                            }
+                            _hint = null;
+                          });
+                        },
+                        onEdit: () => _openBuilder(existing: exam),
+                        onDelete: () => _confirmDelete(exam),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                   ],
                 ],
               ),
@@ -159,11 +256,15 @@ class _ExamToggleTile extends StatelessWidget {
     required this.exam,
     required this.selected,
     required this.onToggle,
+    this.onEdit,
+    this.onDelete,
   });
 
   final ExamType exam;
   final bool selected;
   final VoidCallback onToggle;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +276,7 @@ class _ExamToggleTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onToggle,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
               Icon(
@@ -184,7 +285,7 @@ class _ExamToggleTile extends StatelessWidget {
                     : Icons.check_box_outline_blank_rounded,
                 color: selected ? colors.indigo : colors.textMuted,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   exam.name,
@@ -194,6 +295,18 @@ class _ExamToggleTile extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onEdit != null)
+                IconButton(
+                  tooltip: 'Düzenle',
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+              if (onDelete != null)
+                IconButton(
+                  tooltip: 'Sil',
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                ),
             ],
           ),
         ),

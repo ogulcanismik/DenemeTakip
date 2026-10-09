@@ -25,16 +25,14 @@ class SettingsNotifier extends Notifier<AppSettings> {
       enabledExamTypeIds: enabled,
       activeExamTypeId: enabled.first,
     );
-    await ref.read(denemeRepositoryProvider).saveSettings(next);
-    state = next;
+    await _persist(next);
   }
 
   Future<void> setActiveExam(String examTypeId) async {
     if (!state.isEnabled(examTypeId)) return;
     if (state.activeExamTypeId == examTypeId) return;
     final next = state.copyWith(activeExamTypeId: examTypeId);
-    await ref.read(denemeRepositoryProvider).saveSettings(next);
-    state = next;
+    await _persist(next);
   }
 
   Future<void> setEnabledExams(List<String> enabledExamTypeIds) async {
@@ -50,8 +48,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
       enabledExamTypeIds: enabled,
       activeExamTypeId: active,
     );
-    await ref.read(denemeRepositoryProvider).saveSettings(next);
-    state = next;
+    await _persist(next);
   }
 
   Future<void> setTarget(String examTypeId, double target) async {
@@ -59,13 +56,94 @@ class SettingsNotifier extends Notifier<AppSettings> {
     final targets = Map<String, double>.from(state.targetNets);
     targets[examTypeId] = target;
     final next = state.copyWith(targetNets: targets);
-    await ref.read(denemeRepositoryProvider).saveSettings(next);
-    state = next;
+    await _persist(next);
   }
 
   Future<void> setThemeMode(AppThemeMode themeMode) async {
     if (state.themeMode == themeMode) return;
     final next = state.copyWith(themeMode: themeMode);
+    await _persist(next);
+  }
+
+  /// Creates or updates a user-defined exam and enables it in the switcher.
+  Future<void> upsertCustomExam(ExamType exam) async {
+    if (!exam.isCustom || exam.id.isEmpty) return;
+    if (exam.sections.isEmpty) return;
+
+    final customs = [...state.customExams];
+    final index = customs.indexWhere((item) => item.id == exam.id);
+    if (index >= 0) {
+      customs[index] = exam;
+    } else {
+      customs.add(exam);
+    }
+
+    final targets = Map<String, double>.from(state.targetNets);
+    // Keep hedef net aligned with the builder value on create/edit.
+    targets[exam.id] = exam.defaultTargetNet;
+
+    ExamRegistry.setCustomExams(customs);
+    final enabled = _sanitizeEnabled([...state.enabledExamTypeIds, exam.id]);
+    final resolvedEnabled = enabled.isEmpty ? [exam.id] : enabled;
+    var active = state.activeExamTypeId;
+    if (active == null || !resolvedEnabled.contains(active)) {
+      active = resolvedEnabled.first;
+    }
+
+    final next = state.copyWith(
+      customExams: customs,
+      targetNets: targets,
+      enabledExamTypeIds: resolvedEnabled,
+      activeExamTypeId: active,
+    );
+    await _persist(next);
+  }
+
+  /// Removes a custom exam from the catalog. Past denemeler for that id are
+  /// kept; detail view falls back when the config is gone.
+  /// Returns false if this is the last enabled exam (app must keep ≥1).
+  Future<bool> deleteCustomExam(String examTypeId) async {
+    if (!ExamRegistry.isCustomId(examTypeId)) return false;
+    if (!state.customExams.any((exam) => exam.id == examTypeId)) return false;
+
+    final customs = [
+      for (final exam in state.customExams)
+        if (exam.id != examTypeId) exam,
+    ];
+
+    // Temporarily sync so sanitize still resolves remaining customs.
+    ExamRegistry.setCustomExams(customs);
+
+    final enabled = _sanitizeEnabled([
+      for (final id in state.enabledExamTypeIds)
+        if (id != examTypeId) id,
+    ]);
+    if (enabled.isEmpty) {
+      // Restore overlay; caller should keep ≥1 exam enabled.
+      ExamRegistry.setCustomExams(state.customExams);
+      return false;
+    }
+
+    var active = state.activeExamTypeId;
+    if (active == null || !enabled.contains(active)) {
+      active = enabled.first;
+    }
+
+    final targets = Map<String, double>.from(state.targetNets)
+      ..remove(examTypeId);
+
+    final next = state.copyWith(
+      customExams: customs,
+      enabledExamTypeIds: enabled,
+      activeExamTypeId: active,
+      targetNets: targets,
+    );
+    await _persist(next);
+    return true;
+  }
+
+  Future<void> _persist(AppSettings next) async {
+    ExamRegistry.setCustomExams(next.customExams);
     await ref.read(denemeRepositoryProvider).saveSettings(next);
     state = next;
   }
@@ -108,6 +186,8 @@ class EntriesNotifier extends Notifier<List<DenemeEntry>> {
 final activeExamProvider = Provider<ExamType?>((ref) {
   final id = ref.watch(settingsProvider).activeExamTypeId;
   if (id == null) return null;
+  // Watch customExams so lookups refresh after create/edit/delete.
+  ref.watch(settingsProvider.select((s) => s.customExams));
   return ExamRegistry.byId(id);
 });
 

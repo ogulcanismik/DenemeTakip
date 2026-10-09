@@ -247,7 +247,7 @@ abstract final class ExamRegistry {
     ],
   );
 
-  static const all = <ExamType>[
+  static const builtins = <ExamType>[
     yksTyt,
     yksAytSay,
     yksAytEa,
@@ -263,8 +263,40 @@ abstract final class ExamRegistry {
     hmgs,
   ];
 
+  static List<ExamType> _customs = const [];
+
+  /// Runtime overlay of user-defined exams (`custom_<id>`). Synced from
+  /// [AppSettings.customExams] whenever settings are loaded or updated.
+  static List<ExamType> get customs => _customs;
+
+  /// Built-ins plus loaded custom exams.
+  static List<ExamType> get all => [...builtins, ..._customs];
+
+  static void setCustomExams(List<ExamType> exams) {
+    final cleaned = <ExamType>[];
+    final seen = <String>{};
+    for (final exam in exams) {
+      if (!exam.isCustom) continue;
+      if (exam.id.isEmpty || !seen.add(exam.id)) continue;
+      cleaned.add(exam);
+    }
+    _customs = List.unmodifiable(cleaned);
+  }
+
+  static bool isBuiltinId(String id) {
+    for (final exam in builtins) {
+      if (exam.id == id) return true;
+    }
+    return false;
+  }
+
+  static bool isCustomId(String id) => id.startsWith('custom_');
+
   static ExamType? byId(String id) {
-    for (final exam in all) {
+    for (final exam in builtins) {
+      if (exam.id == id) return exam;
+    }
+    for (final exam in _customs) {
       if (exam.id == id) return exam;
     }
     return null;

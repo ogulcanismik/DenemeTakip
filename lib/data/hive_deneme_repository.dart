@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:deneme_takip/domain/app_settings.dart';
 import 'package:deneme_takip/domain/deneme_entry.dart';
 import 'package:deneme_takip/domain/exam_migration.dart';
+import 'package:deneme_takip/domain/exam_registry.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 abstract class DenemeRepository {
@@ -88,28 +89,34 @@ class HiveDenemeRepository implements DenemeRepository {
     if (_settingsCache != null) return _settingsCache!;
     final raw = _box.get(_settingsKey);
     if (raw == null) {
-      _settingsCache = AppSettings.defaults();
+      _settingsCache = _rememberCustoms(AppSettings.defaults());
       return _settingsCache!;
     }
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) {
-        _settingsCache = AppSettings.defaults();
+        _settingsCache = _rememberCustoms(AppSettings.defaults());
         return _settingsCache!;
       }
       final loaded = AppSettings.fromJson(Map<String, dynamic>.from(decoded));
-      _settingsCache = ExamMigration.migrateSettings(loaded);
+      ExamRegistry.setCustomExams(loaded.customExams);
+      _settingsCache = _rememberCustoms(ExamMigration.migrateSettings(loaded));
       return _settingsCache!;
     } on Object {
-      _settingsCache = AppSettings.defaults();
+      _settingsCache = _rememberCustoms(AppSettings.defaults());
       return _settingsCache!;
     }
   }
 
   @override
   Future<void> saveSettings(AppSettings settings) async {
-    _settingsCache = settings;
+    _settingsCache = _rememberCustoms(settings);
     _remember(_settingsKey, jsonEncode(settings.toJson()));
+  }
+
+  AppSettings _rememberCustoms(AppSettings settings) {
+    ExamRegistry.setCustomExams(settings.customExams);
+    return settings;
   }
 
   @override

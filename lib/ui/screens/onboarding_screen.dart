@@ -50,7 +50,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    for (final exam in ExamRegistry.all) ...[
+                    for (final exam in ExamRegistry.builtins) ...[
                       _ExamSelectTile(
                         exam: exam,
                         selected: _selected.contains(exam.id),

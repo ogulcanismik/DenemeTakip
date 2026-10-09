@@ -1,4 +1,5 @@
 import 'package:deneme_takip/domain/exam_registry.dart';
+import 'package:deneme_takip/domain/exam_type.dart';
 import 'package:flutter/material.dart';
 
 enum AppThemeMode {
@@ -39,6 +40,7 @@ class AppSettings {
     required this.activeExamTypeId,
     required this.enabledExamTypeIds,
     required this.targetNets,
+    this.customExams = const [],
     this.themeMode = AppThemeMode.dark,
   });
 
@@ -46,6 +48,7 @@ class AppSettings {
   final String? activeExamTypeId;
   final List<String> enabledExamTypeIds;
   final Map<String, double> targetNets;
+  final List<ExamType> customExams;
   final AppThemeMode themeMode;
 
   static AppSettings defaults() {
@@ -54,8 +57,9 @@ class AppSettings {
       activeExamTypeId: null,
       enabledExamTypeIds: const [],
       targetNets: {
-        for (final exam in ExamRegistry.all) exam.id: exam.defaultTargetNet,
+        for (final exam in ExamRegistry.builtins) exam.id: exam.defaultTargetNet,
       },
+      customExams: const [],
       themeMode: AppThemeMode.dark,
     );
   }
@@ -73,6 +77,7 @@ class AppSettings {
     String? activeExamTypeId,
     List<String>? enabledExamTypeIds,
     Map<String, double>? targetNets,
+    List<ExamType>? customExams,
     AppThemeMode? themeMode,
     bool clearActiveExam = false,
   }) {
@@ -83,6 +88,7 @@ class AppSettings {
           : (activeExamTypeId ?? this.activeExamTypeId),
       enabledExamTypeIds: enabledExamTypeIds ?? this.enabledExamTypeIds,
       targetNets: targetNets ?? this.targetNets,
+      customExams: customExams ?? this.customExams,
       themeMode: themeMode ?? this.themeMode,
     );
   }
@@ -92,6 +98,7 @@ class AppSettings {
     'activeExamTypeId': activeExamTypeId,
     'enabledExamTypeIds': enabledExamTypeIds,
     'targets': targetNets,
+    'customExams': [for (final exam in customExams) exam.toJson()],
     'themeMode': themeMode.storageValue,
   };
 
@@ -117,6 +124,24 @@ class AppSettings {
       }
     }
 
+    final customs = <ExamType>[];
+    final rawCustoms = json['customExams'];
+    if (rawCustoms is List) {
+      final seen = <String>{};
+      for (final item in rawCustoms) {
+        if (item is! Map) continue;
+        try {
+          final exam = ExamType.fromJson(Map<String, dynamic>.from(item));
+          if (!exam.isCustom || exam.id.isEmpty) continue;
+          if (!seen.add(exam.id)) continue;
+          customs.add(exam);
+          targets.putIfAbsent(exam.id, () => exam.defaultTargetNet);
+        } on Object {
+          continue;
+        }
+      }
+    }
+
     final rawExam = json['activeExamTypeId'];
     final active = rawExam is String && rawExam.isNotEmpty ? rawExam : null;
 
@@ -125,6 +150,7 @@ class AppSettings {
       activeExamTypeId: active,
       enabledExamTypeIds: enabled,
       targetNets: targets,
+      customExams: customs,
       themeMode: AppThemeMode.parse(json['themeMode']),
     );
   }
