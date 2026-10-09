@@ -1,10 +1,56 @@
 import 'package:deneme_takip/domain/deneme_entry.dart';
 import 'package:deneme_takip/domain/exam_type.dart';
 import 'package:deneme_takip/domain/net_format.dart';
+import 'package:deneme_takip/ui/screens/detail_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:deneme_takip/ui/turkish_date.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+
+void _openEntryDetail(
+  BuildContext context,
+  List<DenemeEntry> entries,
+  int spotIndex,
+) {
+  if (spotIndex < 0 || spotIndex >= entries.length) return;
+  if (!context.mounted) return;
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (context) => DetailScreen(entryId: entries[spotIndex].id),
+    ),
+  );
+}
+
+LineTouchData _entryLineTouchData(
+  BuildContext context,
+  List<DenemeEntry> entries,
+) {
+  final colors = AppColors.of(context);
+  return LineTouchData(
+    handleBuiltInTouches: true,
+    touchTooltipData: LineTouchTooltipData(
+      getTooltipColor: (spot) => colors.surfaceHigh,
+      getTooltipItems: (spots) {
+        return [
+          for (final spot in spots)
+            LineTooltipItem(
+              formatNet(spot.y),
+              TextStyle(
+                color: colors.text,
+                fontWeight: FontWeight.w700,
+              ).data,
+            ),
+        ];
+      },
+    ),
+    touchCallback: (event, response) {
+      if (event is! FlTapUpEvent) return;
+      final spots = response?.lineBarSpots;
+      if (spots == null || spots.isEmpty) return;
+      _openEntryDetail(context, entries, spots.first.spotIndex);
+    },
+  );
+}
 
 TextStyle _axisStyle(Color muted) =>
     TextStyle(color: muted, fontSize: 11);
@@ -128,23 +174,7 @@ class TotalNetChart extends StatelessWidget {
               ),
             ),
           ),
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (spot) => AppColors.of(context).surfaceHigh,
-              getTooltipItems: (spots) {
-                return [
-                  for (final spot in spots)
-                    LineTooltipItem(
-                      formatNet(spot.y),
-                      TextStyle(
-                        color: AppColors.of(context).text,
-                        fontWeight: FontWeight.w700,
-                      ).data,
-                    ),
-                ];
-              },
-            ),
-          ),
+          lineTouchData: _entryLineTouchData(context, entries),
           lineBarsData: [
             LineChartBarData(
               spots: [
@@ -462,23 +492,7 @@ class NetTrendChart extends StatelessWidget {
               ),
             ),
           ),
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (spot) => AppColors.of(context).surfaceHigh,
-              getTooltipItems: (spots) {
-                return [
-                  for (final spot in spots)
-                    LineTooltipItem(
-                      formatNet(spot.y),
-                      TextStyle(
-                        color: AppColors.of(context).text,
-                        fontWeight: FontWeight.w700,
-                      ).data,
-                    ),
-                ];
-              },
-            ),
-          ),
+          lineTouchData: _entryLineTouchData(context, entries),
           lineBarsData: [
             if (hasTrend)
               LineChartBarData(
