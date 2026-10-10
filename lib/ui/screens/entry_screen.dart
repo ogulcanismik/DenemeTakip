@@ -7,6 +7,7 @@ import 'package:deneme_takip/state/providers.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:deneme_takip/ui/turkish_date.dart';
 import 'package:deneme_takip/ui/widgets/count_field.dart';
+import 'package:deneme_takip/ui/widgets/hedef_confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -176,6 +177,11 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           .add(entry)
           .timeout(const Duration(seconds: 6));
       if (!mounted) return;
+      final hedef = ref.read(settingsProvider).targetFor(widget.exam.id);
+      if (result.totalNet >= hedef) {
+        await playHedefConfetti(context);
+        if (!mounted) return;
+      }
       widget.onSaved();
     } on Object catch (error) {
       if (mounted) {
