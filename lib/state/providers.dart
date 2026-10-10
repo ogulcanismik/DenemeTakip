@@ -59,6 +59,20 @@ class SettingsNotifier extends Notifier<AppSettings> {
     await _persist(next);
   }
 
+  Future<void> setFormBeatStreak(String examTypeId, int streak) async {
+    if (examTypeId.isEmpty || streak < 0) return;
+    final current = state.formBeatStreakFor(examTypeId);
+    if (current == streak) return;
+    final streaks = Map<String, int>.from(state.formBeatStreakByExamId);
+    if (streak == 0) {
+      streaks.remove(examTypeId);
+    } else {
+      streaks[examTypeId] = streak;
+    }
+    final next = state.copyWith(formBeatStreakByExamId: streaks);
+    await _persist(next);
+  }
+
   Future<void> setThemeMode(AppThemeMode themeMode) async {
     if (state.themeMode == themeMode) return;
     final next = state.copyWith(themeMode: themeMode);
@@ -131,12 +145,15 @@ class SettingsNotifier extends Notifier<AppSettings> {
 
     final targets = Map<String, double>.from(state.targetNets)
       ..remove(examTypeId);
+    final streaks = Map<String, int>.from(state.formBeatStreakByExamId)
+      ..remove(examTypeId);
 
     final next = state.copyWith(
       customExams: customs,
       enabledExamTypeIds: enabled,
       activeExamTypeId: active,
       targetNets: targets,
+      formBeatStreakByExamId: streaks,
     );
     await _persist(next);
     return true;

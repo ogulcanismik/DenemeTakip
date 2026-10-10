@@ -1,3 +1,4 @@
+import 'package:deneme_takip/domain/analysis_engine.dart';
 import 'package:deneme_takip/domain/deneme_entry.dart';
 import 'package:deneme_takip/domain/exam_type.dart';
 import 'package:deneme_takip/domain/istanbul_time.dart';
@@ -7,6 +8,7 @@ import 'package:deneme_takip/state/providers.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:deneme_takip/ui/turkish_date.dart';
 import 'package:deneme_takip/ui/widgets/count_field.dart';
+import 'package:deneme_takip/ui/widgets/form_beat_celebration.dart';
 import 'package:deneme_takip/ui/widgets/hedef_confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -144,10 +146,18 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     }
 
     final title = _title.text.trim();
-    final existing = ref
-        .read(entriesProvider)
-        .where((entry) => entry.examTypeId == widget.exam.id)
-        .length;
+    final priorForExam = [
+      for (final entry in ref.read(entriesProvider))
+        if (entry.examTypeId == widget.exam.id) entry,
+    ]..sort((a, b) {
+        final byDate = b.date.compareTo(a.date);
+        if (byDate != 0) return byDate;
+        return b.id.compareTo(a.id);
+      });
+    final formNet = AnalysisEngine.calculateRecencyWeightedAverage([
+      for (final entry in priorForExam) entry.totalNet,
+    ]);
+    final existing = priorForExam.length;
     setState(() {
       _saving = true;
       _status = 'Kaydediliyor…';
@@ -177,6 +187,23 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           .add(entry)
           .timeout(const Duration(seconds: 6));
       if (!mounted) return;
+
+      var showFormBeat = false;
+      var formStreak = 0;
+      if (formNet != null) {
+        final settings = ref.read(settingsProvider);
+        if (result.totalNet >= formNet) {
+          formStreak = settings.formBeatStreakFor(widget.exam.id) + 1;
+          showFormBeat = true;
+        } else {
+          formStreak = 0;
+        }
+        await ref
+            .read(settingsProvider.notifier)
+            .setFormBeatStreak(widget.exam.id, formStreak);
+        if (!mounted) return;
+      }
+
       final hedef = ref.read(settingsProvider).targetFor(widget.exam.id);
       if (result.totalNet >= hedef) {
         await celebrateHedefReached(
@@ -185,6 +212,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           onSaveTarget: (next) =>
               ref.read(settingsProvider.notifier).setTarget(widget.exam.id, next),
         );
+        if (!mounted) return;
+      }
+      if (showFormBeat) {
+        await celebrateFormBeat(context, streak: formStreak);
         if (!mounted) return;
       }
       widget.onSaved();

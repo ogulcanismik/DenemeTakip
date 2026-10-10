@@ -40,6 +40,7 @@ class AppSettings {
     required this.activeExamTypeId,
     required this.enabledExamTypeIds,
     required this.targetNets,
+    this.formBeatStreakByExamId = const {},
     this.customExams = const [],
     this.themeMode = AppThemeMode.dark,
   });
@@ -48,6 +49,8 @@ class AppSettings {
   final String? activeExamTypeId;
   final List<String> enabledExamTypeIds;
   final Map<String, double> targetNets;
+  /// Consecutive saves that met or beat form net, keyed by exam type id.
+  final Map<String, int> formBeatStreakByExamId;
   final List<ExamType> customExams;
   final AppThemeMode themeMode;
 
@@ -59,6 +62,7 @@ class AppSettings {
       targetNets: {
         for (final exam in ExamRegistry.builtins) exam.id: exam.defaultTargetNet,
       },
+      formBeatStreakByExamId: const {},
       customExams: const [],
       themeMode: AppThemeMode.dark,
     );
@@ -72,11 +76,16 @@ class AppSettings {
         0;
   }
 
+  int formBeatStreakFor(String examTypeId) {
+    return formBeatStreakByExamId[examTypeId] ?? 0;
+  }
+
   AppSettings copyWith({
     bool? onboarded,
     String? activeExamTypeId,
     List<String>? enabledExamTypeIds,
     Map<String, double>? targetNets,
+    Map<String, int>? formBeatStreakByExamId,
     List<ExamType>? customExams,
     AppThemeMode? themeMode,
     bool clearActiveExam = false,
@@ -88,6 +97,8 @@ class AppSettings {
           : (activeExamTypeId ?? this.activeExamTypeId),
       enabledExamTypeIds: enabledExamTypeIds ?? this.enabledExamTypeIds,
       targetNets: targetNets ?? this.targetNets,
+      formBeatStreakByExamId:
+          formBeatStreakByExamId ?? this.formBeatStreakByExamId,
       customExams: customExams ?? this.customExams,
       themeMode: themeMode ?? this.themeMode,
     );
@@ -98,6 +109,7 @@ class AppSettings {
     'activeExamTypeId': activeExamTypeId,
     'enabledExamTypeIds': enabledExamTypeIds,
     'targets': targetNets,
+    'formBeatStreakByExamId': formBeatStreakByExamId,
     'customExams': [for (final exam in customExams) exam.toJson()],
     'themeMode': themeMode.storageValue,
   };
@@ -110,6 +122,19 @@ class AppSettings {
         final value = entry.value;
         if (value is num && value.isFinite) {
           targets[entry.key.toString()] = value.toDouble();
+        }
+      }
+    }
+
+    final streaks = <String, int>{};
+    final rawStreaks = json['formBeatStreakByExamId'];
+    if (rawStreaks is Map) {
+      for (final entry in rawStreaks.entries) {
+        final value = entry.value;
+        if (value is int && value >= 0) {
+          streaks[entry.key.toString()] = value;
+        } else if (value is num && value >= 0 && value == value.truncateToDouble()) {
+          streaks[entry.key.toString()] = value.toInt();
         }
       }
     }
@@ -150,6 +175,7 @@ class AppSettings {
       activeExamTypeId: active,
       enabledExamTypeIds: enabled,
       targetNets: targets,
+      formBeatStreakByExamId: streaks,
       customExams: customs,
       themeMode: AppThemeMode.parse(json['themeMode']),
     );
