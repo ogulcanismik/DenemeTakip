@@ -170,7 +170,6 @@ class _AnalysisPage extends StatelessWidget {
   static const _formWindow = 5;
   static const _chartWindow = 10;
   static const _maWindow = 3;
-  static const _insightExamWindow = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -253,27 +252,6 @@ class _AnalysisPage extends StatelessWidget {
       emptyNewestFirst: emptySeries,
     );
 
-    final insightWindowStart = oldestFirst.length > _insightExamWindow
-        ? oldestFirst.length - _insightExamWindow
-        : 0;
-    final insightEntries = oldestFirst.sublist(insightWindowStart);
-    final insightCounts = _aggregateCounts(exam, insightEntries, sectionId);
-    final insightRatios = AnalysisEngine.calculateRatios(
-      correct: insightCounts.correct,
-      incorrect: insightCounts.incorrect,
-      totalQuestions: insightCounts.totalQuestions,
-    );
-    final focusSubject = sectionId == null
-        ? _weakestSubjectName(exam, insightEntries)
-        : null;
-    final insight = AnalysisEngine.generateInsight(
-      examCount: oldestFirst.length,
-      accuracyRate: insightRatios.accuracyRate,
-      attemptRate: insightRatios.attemptRate,
-      isGeneralScope: sectionId == null,
-      focusSubjectName: focusSubject,
-    );
-
     final lineColor = sectionIndex < 0
         ? AppColors.of(context).emerald
         : sectionColor(sectionIndex);
@@ -337,8 +315,6 @@ class _AnalysisPage extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              _InsightCard(insight: insight, sparse: sparse),
             ]),
           ),
         ),
@@ -377,52 +353,6 @@ class _AnalysisPage extends StatelessWidget {
       if (!found) empty += def.questionCount;
     }
     return (correct: correct, incorrect: incorrect, empty: empty);
-  }
-
-  static ({int correct, int incorrect, int totalQuestions}) _aggregateCounts(
-    ExamType exam,
-    List<DenemeEntry> entries,
-    String? sectionId,
-  ) {
-    var correct = 0;
-    var incorrect = 0;
-    var totalQuestions = 0;
-    for (final entry in entries) {
-      for (final def in exam.sections) {
-        if (sectionId != null && def.id != sectionId) continue;
-        totalQuestions += def.questionCount;
-        for (final section in entry.sections) {
-          if (section.sectionId != def.id) continue;
-          correct += section.correctCount;
-          incorrect += section.incorrectCount;
-        }
-      }
-    }
-    return (
-      correct: correct,
-      incorrect: incorrect,
-      totalQuestions: totalQuestions,
-    );
-  }
-
-  /// Subject with largest gap vs potential (questionCount − avg net) over entries.
-  static String? _weakestSubjectName(ExamType exam, List<DenemeEntry> entries) {
-    if (entries.isEmpty || exam.sections.isEmpty) return null;
-    String? worstName;
-    var worstGap = double.negativeInfinity;
-    for (final def in exam.sections) {
-      var sum = 0.0;
-      for (final entry in entries) {
-        sum += _netFor(entry, def.id);
-      }
-      final avg = sum / entries.length;
-      final gap = def.questionCount - avg;
-      if (gap > worstGap) {
-        worstGap = gap;
-        worstName = def.name;
-      }
-    }
-    return worstName;
   }
 }
 
@@ -643,64 +573,6 @@ class _DeltaStyleChip extends StatelessWidget {
           fontWeight: FontWeight.w800,
           fontSize: 16,
         ).data,
-      ),
-    );
-  }
-}
-
-class _InsightCard extends StatelessWidget {
-  const _InsightCard({required this.insight, required this.sparse});
-
-  final String? insight;
-  final bool sparse;
-
-  @override
-  Widget build(BuildContext context) {
-    final body = sparse
-        ? 'Yeterli veri toplanıyor (En az 3 deneme). Birkaç deneme daha girince '
-              'burada net bir teşhis çıkar.'
-        : (insight ??
-              'Son denemelerin istikrarlı görünüyor; 1-2 zayıf konuya odaklanarak '
-                  'formu bir üst seviyeye taşıyabilirsin.');
-
-    return SurfaceCard(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.of(context).indigo.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.auto_awesome_outlined,
-              color: AppColors.of(context).indigo,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Akıllı Teşhis Notu',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  body,
-                  style: TextStyle(
-                    color: AppColors.of(context).textMuted,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

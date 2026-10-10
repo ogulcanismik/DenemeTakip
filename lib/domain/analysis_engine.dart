@@ -120,41 +120,4 @@ abstract final class AnalysisEngine {
     }
     return out;
   }
-
-  /// One mentor-style Turkish sentence from recent ratios / subject gap.
-  /// Returns `null` when there is not enough signal (caller shows sparse copy).
-  static String? generateInsight({
-    required int examCount,
-    required double? accuracyRate,
-    required double? attemptRate,
-    required bool isGeneralScope,
-    String? focusSubjectName,
-  }) {
-    if (examCount < 3) return null;
-
-    if (accuracyRate != null && attemptRate != null) {
-      if (accuracyRate >= 85 && attemptRate < 70) {
-        return 'Doğruluğun yüksek ama biraz temkinlisin — emin olduğun sorularda '
-            'cesaretlenip süreye daha fazla güvenmek netini yükseltebilir.';
-      }
-      if (accuracyRate < 70 && attemptRate >= 85) {
-        return 'Çoğu soruya dokunuyorsun ama doğruluk düşüyor — şüpheli '
-            'hissettiğin soruları boş bırakmak formunu koruyabilir.';
-      }
-      if (accuracyRate >= 85 && attemptRate >= 85) {
-        return 'Doğruluk ve cevaplama oranların harika dengede — bu tempoyu '
-            'korumaya devam et.';
-      }
-    }
-
-    if (isGeneralScope &&
-        focusSubjectName != null &&
-        focusSubjectName.isNotEmpty) {
-      return '$focusSubjectName dersinde potansiyeline en uzak noktadasın; '
-          'önümüzdeki denemelerde buraya odaklan.';
-    }
-
-    return 'Son denemelerin istikrarlı görünüyor; 1-2 zayıf konuya odaklanarak '
-        'formu bir üst seviyeye taşıyabilirsin.';
-  }
 }
