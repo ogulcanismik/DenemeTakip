@@ -54,11 +54,6 @@ class DashboardScreen extends ConsumerWidget {
                     'Toplam net',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Eskiden yeniye. Kesik çizgi hedef net.',
-                    style: TextStyle(color: AppColors.of(context).textMuted),
-                  ),
                   const SizedBox(height: 12),
                   TotalNetChart(entries: oldestFirst, target: target),
                 ],

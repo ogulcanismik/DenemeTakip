@@ -315,13 +315,6 @@ class _AnalysisPage extends StatelessWidget {
                       chartTitle,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      chartEntries.length >= _chartWindow
-                          ? 'Son $_chartWindow deneme · yumuşak çizgi $_maWindow deneme ort.'
-                          : 'Eskiden yeniye · yumuşak çizgi $_maWindow deneme ort.',
-                      style: TextStyle(color: AppColors.of(context).textMuted),
-                    ),
                     const SizedBox(height: 12),
                     if (chartEntries.length < 2)
                       Padding(
@@ -596,10 +589,7 @@ class _FormPerformanceCard extends StatelessWidget {
 }
 
 class _RangeTile extends StatelessWidget {
-  const _RangeTile({
-    required this.label,
-    required this.value,
-  });
+  const _RangeTile({required this.label, required this.value});
 
   final String label;
   final String value;
