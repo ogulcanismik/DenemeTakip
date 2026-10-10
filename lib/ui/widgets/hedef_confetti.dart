@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 /// Post-save celebration when a deneme hits the active hedef net.
 ///
 /// Starts a calm full-viewport confetti burst and a dialog at the same time.
-/// Primary action opens the same hedef editor as Özet; dismiss or edit both
-/// return so the caller can continue to Özet. Save is already done — never
-/// blocks navigation on confetti/dialog failures.
+/// Primary action opens the same hedef editor as Özet; barrier/back dismiss
+/// or edit both return so the caller can continue to Özet. Save is already
+/// done — never blocks navigation on confetti/dialog failures.
 Future<void> celebrateHedefReached(
   BuildContext context, {
   required double currentHedef,
