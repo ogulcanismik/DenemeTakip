@@ -3,6 +3,7 @@ import 'package:deneme_takip/domain/deneme_entry.dart';
 import 'package:deneme_takip/domain/exam_type.dart';
 import 'package:deneme_takip/domain/net_format.dart';
 import 'package:deneme_takip/state/providers.dart';
+import 'package:deneme_takip/ui/screens/detail_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:deneme_takip/ui/widgets/net_charts.dart';
 import 'package:flutter/material.dart';
@@ -142,6 +143,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
                   target: sectionId == null
                       ? settings.targetFor(exam.id)
                       : null,
+                  onGoToPage: _goToPage,
                 );
               },
             ),
@@ -159,6 +161,7 @@ class _AnalysisPage extends StatelessWidget {
     required this.sectionId,
     required this.sectionIndex,
     required this.target,
+    required this.onGoToPage,
   });
 
   final ExamType exam;
@@ -166,6 +169,7 @@ class _AnalysisPage extends StatelessWidget {
   final String? sectionId;
   final int sectionIndex;
   final double? target;
+  final ValueChanged<int> onGoToPage;
 
   static const _formWindow = 5;
   static const _chartWindow = 10;
@@ -260,6 +264,11 @@ class _AnalysisPage extends StatelessWidget {
         : '${exam.sectionById(sectionId!)?.name ?? 'Ders'} net trendi';
     final sparse = oldestFirst.length < 3;
 
+    final extremums = _extremumEntries(oldestFirst, sectionId);
+    final studyRanking = sectionId == null
+        ? _studyNeededRanking(exam, newestFirst)
+        : const <({int sectionPage, String name})>[];
+
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -284,6 +293,20 @@ class _AnalysisPage extends StatelessWidget {
                 weightedEmpty: weightedCounts.empty,
                 weightedIncorrect: weightedCounts.incorrect,
               ),
+              const SizedBox(height: 12),
+              _BestWorstRow(
+                best: extremums.best,
+                bestNet: extremums.bestNet,
+                weakest: extremums.weakest,
+                weakestNet: extremums.weakestNet,
+              ),
+              if (studyRanking.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _StudyNeededCard(
+                  items: studyRanking,
+                  onSubjectTap: onGoToPage,
+                ),
+              ],
               const SizedBox(height: 12),
               SurfaceCard(
                 child: Column(
@@ -320,6 +343,68 @@ class _AnalysisPage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Max / min net over all history for the active exam type + scope.
+  static ({
+    DenemeEntry best,
+    double bestNet,
+    DenemeEntry weakest,
+    double weakestNet,
+  }) _extremumEntries(List<DenemeEntry> oldestFirst, String? sectionId) {
+    var best = oldestFirst.first;
+    var bestNet = _netFor(best, sectionId);
+    var weakest = best;
+    var weakestNet = bestNet;
+    for (var i = 1; i < oldestFirst.length; i++) {
+      final entry = oldestFirst[i];
+      final net = _netFor(entry, sectionId);
+      if (net > bestNet) {
+        best = entry;
+        bestNet = net;
+      }
+      if (net < weakestNet) {
+        weakest = entry;
+        weakestNet = net;
+      }
+    }
+    return (
+      best: best,
+      bestNet: bestNet,
+      weakest: weakest,
+      weakestNet: weakestNet,
+    );
+  }
+
+  /// Subjects ordered worst → best by (recency-weighted avg net) / questionCount.
+  static List<({int sectionPage, String name})> _studyNeededRanking(
+    ExamType exam,
+    List<DenemeEntry> newestFirst,
+  ) {
+    final scored = <({int sectionPage, String name, double score})>[];
+    for (var i = 0; i < exam.sections.length; i++) {
+      final def = exam.sections[i];
+      if (def.questionCount <= 0) continue;
+      final nets = [
+        for (final entry in newestFirst) _netFor(entry, def.id),
+      ];
+      final weighted = AnalysisEngine.calculateRecencyWeightedAverage(nets);
+      if (weighted == null) continue;
+      scored.add((
+        sectionPage: i + 1,
+        name: def.name,
+        score: weighted / def.questionCount,
+      ));
+    }
+    scored.sort((a, b) {
+      final byScore = a.score.compareTo(b.score);
+      if (byScore != 0) return byScore;
+      return a.sectionPage.compareTo(b.sectionPage);
+    });
+    return [
+      for (final item in scored)
+        (sectionPage: item.sectionPage, name: item.name),
+    ];
   }
 
   static double _netFor(DenemeEntry entry, String? sectionId) {
@@ -573,6 +658,185 @@ class _DeltaStyleChip extends StatelessWidget {
           fontWeight: FontWeight.w800,
           fontSize: 16,
         ).data,
+      ),
+    );
+  }
+}
+
+class _BestWorstRow extends StatelessWidget {
+  const _BestWorstRow({
+    required this.best,
+    required this.bestNet,
+    required this.weakest,
+    required this.weakestNet,
+  });
+
+  final DenemeEntry best;
+  final double bestNet;
+  final DenemeEntry weakest;
+  final double weakestNet;
+
+  void _openDetail(BuildContext context, String entryId) {
+    if (!context.mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => DetailScreen(entryId: entryId),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: _ExtremumChip(
+            label: 'En iyi',
+            title: best.title,
+            net: bestNet,
+            accent: colors.emerald,
+            onTap: () => _openDetail(context, best.id),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _ExtremumChip(
+            label: 'En zayıf',
+            title: weakest.title,
+            net: weakestNet,
+            accent: colors.amber,
+            onTap: () => _openDetail(context, weakest.id),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ExtremumChip extends StatelessWidget {
+  const _ExtremumChip({
+    required this.label,
+    required this.title,
+    required this.net,
+    required this.accent,
+    required this.onTap,
+  });
+
+  final String label;
+  final String title;
+  final double net;
+  final Color accent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return Material(
+      color: colors.surfaceHigh.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                formatNet(net),
+                style: TextStyle(
+                  color: colors.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ).data,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StudyNeededCard extends StatelessWidget {
+  const _StudyNeededCard({
+    required this.items,
+    required this.onSubjectTap,
+  });
+
+  final List<({int sectionPage, String name})> items;
+  final ValueChanged<int> onSubjectTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return SurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Çalışman Gerekenler',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Dersler, göreli zayıftan güçlüye',
+            style: TextStyle(
+              color: colors.textMuted,
+              fontSize: 12,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (var i = 0; i < items.length; i++)
+                Material(
+                  color: colors.surfaceHigh.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(10),
+                  child: InkWell(
+                    onTap: () => onSubjectTap(items[i].sectionPage),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        '${i + 1}. ${items[i].name}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
