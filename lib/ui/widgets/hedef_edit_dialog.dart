@@ -79,10 +79,6 @@ class _HedefEditDialogState extends State<_HedefEditDialog> {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Vazgeç'),
-        ),
         FilledButton(onPressed: _submit, child: const Text('Kaydet')),
       ],
     );
