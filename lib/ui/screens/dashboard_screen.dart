@@ -4,6 +4,7 @@ import 'package:deneme_takip/state/providers.dart';
 import 'package:deneme_takip/ui/screens/detail_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:deneme_takip/ui/turkish_date.dart';
+import 'package:deneme_takip/ui/widgets/hedef_edit_dialog.dart';
 import 'package:deneme_takip/ui/widgets/net_charts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,10 +90,7 @@ class DashboardScreen extends ConsumerWidget {
     String examTypeId,
     double current,
   ) async {
-    final next = await showDialog<double>(
-      context: context,
-      builder: (context) => _TargetDialog(initial: current),
-    );
+    final next = await showEditHedefDialog(context, initial: current);
     if (next == null) return;
     await ref.read(settingsProvider.notifier).setTarget(examTypeId, next);
   }
@@ -136,82 +134,6 @@ class _TargetCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _TargetDialog extends StatefulWidget {
-  const _TargetDialog({required this.initial});
-
-  final double initial;
-
-  @override
-  State<_TargetDialog> createState() => _TargetDialogState();
-}
-
-class _TargetDialogState extends State<_TargetDialog> {
-  late final TextEditingController _controller;
-  String? _hint;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: formatNet(widget.initial));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    final parsed = double.tryParse(
-      _controller.text.trim().replaceAll(',', '.'),
-    );
-    if (parsed == null || !parsed.isFinite) {
-      setState(() => _hint = 'Bir sayı gir.');
-      return;
-    }
-    if (parsed < 0) {
-      setState(() => _hint = 'Hedef negatif olamaz.');
-      return;
-    }
-    Navigator.pop(context, parsed);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Hedef net'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _controller,
-            autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ).data,
-            decoration: const InputDecoration(labelText: 'Hedef'),
-            onSubmitted: (_) => _submit(),
-          ),
-          if (_hint != null) ...[
-            const SizedBox(height: 8),
-            Text(_hint!, style: TextStyle(color: AppColors.of(context).amber)),
-          ],
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Vazgeç'),
-        ),
-        FilledButton(onPressed: _submit, child: const Text('Kaydet')),
-      ],
     );
   }
 }

@@ -1,15 +1,52 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:deneme_takip/ui/theme.dart';
+import 'package:deneme_takip/ui/widgets/hedef_edit_dialog.dart';
 import 'package:flutter/material.dart';
 
-/// Short, non-blocking celebration when a deneme hits the active hedef net.
+/// Post-save celebration when a deneme hits the active hedef net.
 ///
-/// Palette stays on-brand (indigo / soft purple / emerald / warm flecks).
-/// Failures are swallowed so post-save navigation always continues.
+/// Starts a calm full-viewport confetti burst and a dialog at the same time.
+/// Primary action opens the same hedef editor as Özet; dismiss or edit both
+/// return so the caller can continue to Özet. Save is already done — never
+/// blocks navigation on confetti/dialog failures.
+Future<void> celebrateHedefReached(
+  BuildContext context, {
+  required double currentHedef,
+  required Future<void> Function(double next) onSaveTarget,
+}) async {
+  try {
+    unawaited(playHedefConfetti(context));
+    if (!context.mounted) return;
+
+    final raise = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => const _HedefReachedDialog(),
+    );
+    if (!context.mounted) return;
+
+    if (raise == true) {
+      final next = await showEditHedefDialog(
+        context,
+        initial: currentHedef,
+      );
+      if (!context.mounted) return;
+      if (next != null) {
+        await onSaveTarget(next);
+      }
+    }
+  } on Object {
+    // Never block Özet navigation after a successful save.
+  }
+}
+
+/// Short, non-blocking particle overlay (indigo / emerald / soft neutrals).
 Future<void> playHedefConfetti(BuildContext context) async {
   try {
-    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    // Navigator overlay (not root) so the celebration dialog paints above.
+    final overlay = Overlay.maybeOf(context);
     if (overlay == null) return;
 
     final colors = AppColors.of(context);
@@ -34,8 +71,8 @@ Future<void> playHedefConfetti(BuildContext context) async {
       ),
     );
     overlay.insert(entry);
-    await Future<void>.delayed(const Duration(milliseconds: 2200))
-        .timeout(const Duration(milliseconds: 2800));
+    await Future<void>.delayed(const Duration(milliseconds: 2600))
+        .timeout(const Duration(milliseconds: 3200));
     try {
       entry.remove();
     } on Object {
@@ -43,6 +80,34 @@ Future<void> playHedefConfetti(BuildContext context) async {
     }
   } on Object {
     // Never block Özet navigation after a successful save.
+  }
+}
+
+class _HedefReachedDialog extends StatelessWidget {
+  const _HedefReachedDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return AlertDialog(
+      title: Text(
+        'Hedefine ulaştın!',
+        style: TextStyle(
+          color: colors.text,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Tamam'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Hedefi Yükselt'),
+        ),
+      ],
+    );
   }
 }
 
@@ -72,7 +137,7 @@ class _HedefConfettiLayerState extends State<_HedefConfettiLayer>
     _particles = _spawnParticles(widget.colors, widget.isDark);
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2400),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           widget.onFinished();
@@ -96,7 +161,7 @@ class _HedefConfettiLayerState extends State<_HedefConfettiLayer>
           painter: _ConfettiPainter(
             particles: _particles,
             t: Curves.easeOutCubic.transform(_controller.value),
-            fade: (1.0 - _controller.value).clamp(0.0, 1.0),
+            fade: (1.0 - _controller.value * 0.92).clamp(0.0, 1.0),
           ),
           size: Size.infinite,
         );
@@ -115,20 +180,33 @@ List<_Particle> _spawnParticles(AppColors colors, bool isDark) {
     colors.textMuted.withValues(alpha: isDark ? 0.85 : 0.7),
   ];
 
+  // Three wide burst origins so particles cover most of the viewport,
+  // not a tiny center sparkle — still calm velocities / soft palette.
+  const origins = <(double, double)>[
+    (0.18, 0.32),
+    (0.50, 0.26),
+    (0.82, 0.32),
+  ];
+
   return [
-    for (var i = 0; i < 42; i++)
-      _Particle(
-        originX: 0.35 + rng.nextDouble() * 0.30,
-        originY: 0.28 + rng.nextDouble() * 0.12,
-        vx: (rng.nextDouble() - 0.5) * 1.15,
-        vy: -0.55 - rng.nextDouble() * 0.55,
-        gravity: 1.15 + rng.nextDouble() * 0.45,
-        size: 3.0 + rng.nextDouble() * 4.5,
-        rotation: rng.nextDouble() * math.pi,
-        spin: (rng.nextDouble() - 0.5) * 4.0,
-        color: palette[rng.nextInt(palette.length)],
-        rect: rng.nextBool(),
-      ),
+    for (var i = 0; i < 108; i++)
+      () {
+        final origin = origins[i % origins.length];
+        final jitterX = (rng.nextDouble() - 0.5) * 0.14;
+        final jitterY = (rng.nextDouble() - 0.5) * 0.10;
+        return _Particle(
+          originX: (origin.$1 + jitterX).clamp(0.05, 0.95),
+          originY: (origin.$2 + jitterY).clamp(0.12, 0.48),
+          vx: (rng.nextDouble() - 0.5) * 1.85,
+          vy: -0.65 - rng.nextDouble() * 0.75,
+          gravity: 1.05 + rng.nextDouble() * 0.55,
+          size: 3.5 + rng.nextDouble() * 5.5,
+          rotation: rng.nextDouble() * math.pi,
+          spin: (rng.nextDouble() - 0.5) * 4.2,
+          color: palette[rng.nextInt(palette.length)],
+          rect: rng.nextBool(),
+        );
+      }(),
   ];
 }
 
@@ -173,7 +251,7 @@ class _ConfettiPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
     final paint = Paint()..style = PaintingStyle.fill;
-    final opacity = (fade * 1.15).clamp(0.0, 1.0);
+    final opacity = (fade * 1.05).clamp(0.0, 1.0);
 
     for (final p in particles) {
       final x = (p.originX + p.vx * t) * size.width;

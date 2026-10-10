@@ -179,7 +179,12 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       if (!mounted) return;
       final hedef = ref.read(settingsProvider).targetFor(widget.exam.id);
       if (result.totalNet >= hedef) {
-        await playHedefConfetti(context);
+        await celebrateHedefReached(
+          context,
+          currentHedef: hedef,
+          onSaveTarget: (next) =>
+              ref.read(settingsProvider.notifier).setTarget(widget.exam.id, next),
+        );
         if (!mounted) return;
       }
       widget.onSaved();
