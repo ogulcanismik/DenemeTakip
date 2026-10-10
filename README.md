@@ -29,3 +29,7 @@ Intermediate values are not rounded. The UI shows at most 2 decimal places, uses
 ```bash
 flutter test test/net_engine_test.dart
 ```
+
+## Android release signing
+
+Release APK / App Bundle signing uses a local `android/key.properties` (gitignored) that points at your upload keystore. Do not commit `key.properties` or `*.jks` / `*.keystore`.
