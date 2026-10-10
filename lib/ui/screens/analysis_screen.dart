@@ -530,15 +530,6 @@ class _FormPerformanceCard extends StatelessWidget {
             thickness: 1,
             color: colors.outline.withValues(alpha: 0.55),
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Güvenli Net Aralığı',
-            style: TextStyle(
-              color: colors.textMuted,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
           const SizedBox(height: 8),
           Row(
             children: [
