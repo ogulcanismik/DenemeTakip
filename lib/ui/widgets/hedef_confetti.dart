@@ -98,10 +98,6 @@ class _HedefReachedDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Tamam'),
-        ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
           child: const Text('Hedefi Yükselt'),
