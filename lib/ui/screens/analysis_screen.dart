@@ -3,6 +3,7 @@ import 'package:deneme_takip/domain/deneme_entry.dart';
 import 'package:deneme_takip/domain/exam_type.dart';
 import 'package:deneme_takip/domain/net_format.dart';
 import 'package:deneme_takip/state/providers.dart';
+import 'package:deneme_takip/ui/screens/detail_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:deneme_takip/ui/widgets/net_charts.dart';
 import 'package:flutter/material.dart';
@@ -228,6 +229,18 @@ class _AnalysisPage extends StatelessWidget {
       allValues,
       windowSize: _formWindow,
     );
+    final peakEntryId = _extremumEntryId(
+      oldestFirst,
+      sectionId,
+      maximize: true,
+    );
+    final floorEntryId = _extremumEntryId(
+      oldestFirst.length > _formWindow
+          ? oldestFirst.sublist(oldestFirst.length - _formWindow)
+          : oldestFirst,
+      sectionId,
+      maximize: false,
+    );
 
     final chartStart = oldestFirst.length > _chartWindow
         ? oldestFirst.length - _chartWindow
@@ -287,6 +300,8 @@ class _AnalysisPage extends StatelessWidget {
                 deltaPct: deltaPct,
                 peak: range.peak,
                 floor: range.floor,
+                peakEntryId: peakEntryId,
+                floorEntryId: floorEntryId,
                 weightedCorrect: weightedCounts.correct,
                 weightedEmpty: weightedCounts.empty,
                 weightedIncorrect: weightedCounts.incorrect,
@@ -375,6 +390,26 @@ class _AnalysisPage extends StatelessWidget {
     return 0;
   }
 
+  /// First extremum in [entries] (chronological). Peak = max; taban window = min.
+  static String? _extremumEntryId(
+    List<DenemeEntry> entries,
+    String? sectionId, {
+    required bool maximize,
+  }) {
+    if (entries.isEmpty) return null;
+    var bestId = entries.first.id;
+    var bestNet = _netFor(entries.first, sectionId);
+    for (var i = 1; i < entries.length; i++) {
+      final net = _netFor(entries[i], sectionId);
+      final better = maximize ? net > bestNet : net < bestNet;
+      if (better) {
+        bestNet = net;
+        bestId = entries[i].id;
+      }
+    }
+    return bestId;
+  }
+
   /// Per-deneme D / Y / boş in selected scope. Empty = questionCount − D − Y.
   static ({int correct, int incorrect, int empty}) _countsForEntry(
     ExamType exam,
@@ -422,6 +457,8 @@ class _FormPerformanceCard extends StatelessWidget {
     required this.deltaPct,
     required this.peak,
     required this.floor,
+    required this.peakEntryId,
+    required this.floorEntryId,
     required this.weightedCorrect,
     required this.weightedEmpty,
     required this.weightedIncorrect,
@@ -431,6 +468,8 @@ class _FormPerformanceCard extends StatelessWidget {
   final double? deltaPct;
   final double? peak;
   final double? floor;
+  final String? peakEntryId;
+  final String? floorEntryId;
   final double? weightedCorrect;
   final double? weightedEmpty;
   final double? weightedIncorrect;
@@ -512,6 +551,9 @@ class _FormPerformanceCard extends StatelessWidget {
                 child: _RangeTile(
                   label: 'Zirve Net',
                   value: peak == null ? '—' : formatNet(peak!),
+                  onTap: peakEntryId == null
+                      ? null
+                      : () => _openEntryDetail(context, peakEntryId!),
                 ),
               ),
               const SizedBox(width: 10),
@@ -519,11 +561,22 @@ class _FormPerformanceCard extends StatelessWidget {
                 child: _RangeTile(
                   label: 'Taban Net',
                   value: floor == null ? '—' : formatNet(floor!),
+                  onTap: floorEntryId == null
+                      ? null
+                      : () => _openEntryDetail(context, floorEntryId!),
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  static void _openEntryDetail(BuildContext context, String entryId) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => DetailScreen(entryId: entryId),
       ),
     );
   }
@@ -555,39 +608,66 @@ class _FormPerformanceCard extends StatelessWidget {
 }
 
 class _RangeTile extends StatelessWidget {
-  const _RangeTile({required this.label, required this.value});
+  const _RangeTile({
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
 
   final String label;
   final String value;
+  final VoidCallback? onTap;
+
+  static final _splash = Colors.white.withValues(alpha: 0.28);
+  static final _highlight = Colors.white.withValues(alpha: 0.12);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.of(context).surfaceHigh.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: AppColors.of(context).textMuted,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
+    final colors = AppColors.of(context);
+    final radius = BorderRadius.circular(10);
+    return Material(
+      color: colors.surfaceHigh.withValues(alpha: 0.55),
+      borderRadius: radius,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        splashColor: _splash,
+        highlightColor: _highlight,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: colors.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ).data,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: colors.textMuted,
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-            ).data,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -663,20 +743,30 @@ class _StudyNeededCard extends StatelessWidget {
                   child: InkWell(
                     onTap: () => onSubjectTap(items[i].sectionPage),
                     borderRadius: BorderRadius.circular(10),
+                    splashColor: Colors.white.withValues(alpha: 0.28),
+                    highlightColor: Colors.white.withValues(alpha: 0.12),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 12,
                       ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          items[i].name,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              items[i].name,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                        ),
+                          Icon(
+                            Icons.chevron_right,
+                            size: 20,
+                            color: colors.textMuted,
+                          ),
+                        ],
                       ),
                     ),
                   ),
