@@ -1,7 +1,7 @@
 name: deneme_takip
 description: YKS, LGS ve KPSS denemelerini çevrimdışı takip eden uygulama.
 publish_to: "none"
-version: 1.0.1+2
+version: 1.0.1+3
 
 environment:
   sdk: ^3.13.5
