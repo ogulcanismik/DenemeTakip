@@ -7,9 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final repository = await HiveDenemeRepository.open();
+  final container = ProviderContainer(
+    overrides: [denemeRepositoryProvider.overrideWithValue(repository)],
+  );
+  // Live isSupporter via settingsProvider; failures stay inside AdService.
+  await container.read(adServiceProvider).initialize();
   runApp(
-    ProviderScope(
-      overrides: [denemeRepositoryProvider.overrideWithValue(repository)],
+    UncontrolledProviderScope(
+      container: container,
       child: const DenemeApp(),
     ),
   );

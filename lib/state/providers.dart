@@ -1,3 +1,4 @@
+import 'package:deneme_takip/ads/ad_service.dart';
 import 'package:deneme_takip/data/hive_deneme_repository.dart';
 import 'package:deneme_takip/domain/app_settings.dart';
 import 'package:deneme_takip/domain/deneme_entry.dart';
@@ -7,6 +8,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final denemeRepositoryProvider = Provider<DenemeRepository>((ref) {
   throw StateError('DenemeRepository sağlanmadı.');
+});
+
+final adServiceProvider = Provider<AdService>((ref) {
+  final service = AdService(
+    isSupporter: () => ref.read(settingsProvider).isSupporter,
+  );
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(
@@ -83,6 +92,13 @@ class SettingsNotifier extends Notifier<AppSettings> {
   Future<void> setThemeMode(AppThemeMode themeMode) async {
     if (state.themeMode == themeMode) return;
     final next = state.copyWith(themeMode: themeMode);
+    await _persist(next);
+  }
+
+  /// Marks the one-time supporter unlock (ad-free). Used by billing later.
+  Future<void> setSupporter(bool value) async {
+    if (state.isSupporter == value) return;
+    final next = state.copyWith(isSupporter: value);
     await _persist(next);
   }
 

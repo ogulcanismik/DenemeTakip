@@ -44,6 +44,7 @@ class AppSettings {
     this.formBeatStreakByExamId = const {},
     this.customExams = const [],
     this.themeMode = AppThemeMode.dark,
+    this.isSupporter = false,
   });
 
   /// First-run welcome shown once before exam onboarding.
@@ -56,6 +57,8 @@ class AppSettings {
   final Map<String, int> formBeatStreakByExamId;
   final List<ExamType> customExams;
   final AppThemeMode themeMode;
+  /// One-time supporter unlock — skips ads and upsell entirely.
+  final bool isSupporter;
 
   static AppSettings defaults() {
     return AppSettings(
@@ -69,6 +72,7 @@ class AppSettings {
       formBeatStreakByExamId: const {},
       customExams: const [],
       themeMode: AppThemeMode.dark,
+      isSupporter: false,
     );
   }
 
@@ -93,6 +97,7 @@ class AppSettings {
     Map<String, int>? formBeatStreakByExamId,
     List<ExamType>? customExams,
     AppThemeMode? themeMode,
+    bool? isSupporter,
     bool clearActiveExam = false,
   }) {
     return AppSettings(
@@ -107,6 +112,7 @@ class AppSettings {
           formBeatStreakByExamId ?? this.formBeatStreakByExamId,
       customExams: customExams ?? this.customExams,
       themeMode: themeMode ?? this.themeMode,
+      isSupporter: isSupporter ?? this.isSupporter,
     );
   }
 
@@ -119,6 +125,7 @@ class AppSettings {
     'formBeatStreakByExamId': formBeatStreakByExamId,
     'customExams': [for (final exam in customExams) exam.toJson()],
     'themeMode': themeMode.storageValue,
+    'isSupporter': isSupporter,
   };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
@@ -189,6 +196,7 @@ class AppSettings {
       formBeatStreakByExamId: streaks,
       customExams: customs,
       themeMode: AppThemeMode.parse(json['themeMode']),
+      isSupporter: json['isSupporter'] == true,
     );
   }
 }
