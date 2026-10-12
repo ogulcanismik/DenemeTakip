@@ -17,10 +17,17 @@ class SettingsNotifier extends Notifier<AppSettings> {
   @override
   AppSettings build() => ref.read(denemeRepositoryProvider).loadSettings();
 
+  Future<void> markWelcomeSeen() async {
+    if (state.welcomeSeen) return;
+    final next = state.copyWith(welcomeSeen: true);
+    await _persist(next);
+  }
+
   Future<void> completeOnboarding(List<String> enabledExamTypeIds) async {
     final enabled = _sanitizeEnabled(enabledExamTypeIds);
     if (enabled.isEmpty) return;
     final next = state.copyWith(
+      welcomeSeen: true,
       onboarded: true,
       enabledExamTypeIds: enabled,
       activeExamTypeId: enabled.first,

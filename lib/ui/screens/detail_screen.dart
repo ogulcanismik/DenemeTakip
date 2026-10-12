@@ -24,7 +24,9 @@ class DetailScreen extends ConsumerWidget {
     }
     if (entry == null) {
       return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          leading: const BackButton(),
+        ),
         body: const Center(child: Text('Bu deneme bulunamadı.')),
       );
     }
@@ -34,6 +36,7 @@ class DetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButton(),
         title: Text(saved.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
       body: AppFrame(

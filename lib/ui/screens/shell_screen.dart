@@ -5,6 +5,7 @@ import 'package:deneme_takip/ui/screens/entry_screen.dart';
 import 'package:deneme_takip/ui/screens/exam_list_settings_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -19,67 +20,106 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   /// 0 Özet, 1 Analiz, 2 Deneme Gir
   int _tab = 2;
   int _formToken = 0;
+  DateTime? _lastBackAt;
+
+  /// Root-shell back: switch to Özet first; on Özet require a quick double-back
+  /// to leave the app. Nested routes above the shell still pop normally.
+  void _handleRootBack() {
+    if (_tab != 0) {
+      setState(() => _tab = 0);
+      return;
+    }
+
+    final now = DateTime.now();
+    final last = _lastBackAt;
+    if (last != null && now.difference(last) < const Duration(seconds: 2)) {
+      SystemNavigator.pop();
+      return;
+    }
+
+    _lastBackAt = now;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Çıkmak için tekrar geri'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final exam = ref.watch(activeExamProvider);
     if (exam == null) return const SizedBox.shrink();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Deneme Takip'),
-        actions: [
-          const _ExamSwitcher(),
-          IconButton(
-            tooltip: 'Ayarlar',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) => const ExamListSettingsScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.settings_outlined),
-          ),
-        ],
-      ),
-      body: IndexedStack(
-        index: _tab,
-        sizing: StackFit.expand,
-        children: [
-          DashboardScreen(onEnterDeneme: () => setState(() => _tab = 2)),
-          const AnalysisScreen(),
-          EntryScreen(
-            key: ValueKey('${exam.id}:$_formToken'),
-            exam: exam,
-            onSaved: () => setState(() {
-              _tab = 0;
-              _formToken += 1;
-            }),
-          ),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        onDestinationSelected: (index) => setState(() => _tab = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.insights_outlined),
-            selectedIcon: Icon(Icons.insights),
-            label: 'Özet',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.analytics_outlined),
-            selectedIcon: Icon(Icons.analytics),
-            label: 'Analiz',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.edit_note_outlined),
-            selectedIcon: Icon(Icons.edit_note),
-            label: 'Deneme Gir',
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        final navigator = Navigator.of(context);
+        if (navigator.canPop()) {
+          navigator.pop();
+          return;
+        }
+        _handleRootBack();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Deneme Takip'),
+          actions: [
+            const _ExamSwitcher(),
+            IconButton(
+              tooltip: 'Ayarlar',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const ExamListSettingsScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.settings_outlined),
+            ),
+          ],
+        ),
+        body: IndexedStack(
+          index: _tab,
+          sizing: StackFit.expand,
+          children: [
+            DashboardScreen(onEnterDeneme: () => setState(() => _tab = 2)),
+            const AnalysisScreen(),
+            EntryScreen(
+              key: ValueKey('${exam.id}:$_formToken'),
+              exam: exam,
+              onSaved: () => setState(() {
+                _tab = 0;
+                _formToken += 1;
+              }),
+            ),
+          ],
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _tab,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          onDestinationSelected: (index) => setState(() => _tab = index),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.insights_outlined),
+              selectedIcon: Icon(Icons.insights),
+              label: 'Özet',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.analytics_outlined),
+              selectedIcon: Icon(Icons.analytics),
+              label: 'Analiz',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.edit_note_outlined),
+              selectedIcon: Icon(Icons.edit_note),
+              label: 'Deneme Gir',
+            ),
+          ],
+        ),
       ),
     );
   }

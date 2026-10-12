@@ -188,6 +188,7 @@ class _CustomExamBuilderScreenState
 
     return Scaffold(
       appBar: AppBar(
+        leading: const BackButton(),
         title: Text(_isEdit ? 'Özel sınavı düzenle' : 'Özel sınav oluştur'),
       ),
       body: AppFrame(

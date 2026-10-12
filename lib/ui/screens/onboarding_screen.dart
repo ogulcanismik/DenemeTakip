@@ -37,7 +37,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 36, 20, 16),
                   children: [
                     Text(
-                      'Deneme Takip',
+                      'Sınavlarını seç',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 12),

@@ -36,6 +36,7 @@ enum AppThemeMode {
 
 class AppSettings {
   const AppSettings({
+    required this.welcomeSeen,
     required this.onboarded,
     required this.activeExamTypeId,
     required this.enabledExamTypeIds,
@@ -45,6 +46,8 @@ class AppSettings {
     this.themeMode = AppThemeMode.dark,
   });
 
+  /// First-run welcome shown once before exam onboarding.
+  final bool welcomeSeen;
   final bool onboarded;
   final String? activeExamTypeId;
   final List<String> enabledExamTypeIds;
@@ -56,6 +59,7 @@ class AppSettings {
 
   static AppSettings defaults() {
     return AppSettings(
+      welcomeSeen: false,
       onboarded: false,
       activeExamTypeId: null,
       enabledExamTypeIds: const [],
@@ -81,6 +85,7 @@ class AppSettings {
   }
 
   AppSettings copyWith({
+    bool? welcomeSeen,
     bool? onboarded,
     String? activeExamTypeId,
     List<String>? enabledExamTypeIds,
@@ -91,6 +96,7 @@ class AppSettings {
     bool clearActiveExam = false,
   }) {
     return AppSettings(
+      welcomeSeen: welcomeSeen ?? this.welcomeSeen,
       onboarded: onboarded ?? this.onboarded,
       activeExamTypeId: clearActiveExam
           ? null
@@ -105,6 +111,7 @@ class AppSettings {
   }
 
   Map<String, dynamic> toJson() => {
+    'welcomeSeen': welcomeSeen,
     'onboarded': onboarded,
     'activeExamTypeId': activeExamTypeId,
     'enabledExamTypeIds': enabledExamTypeIds,
@@ -169,9 +176,13 @@ class AppSettings {
 
     final rawExam = json['activeExamTypeId'];
     final active = rawExam is String && rawExam.isNotEmpty ? rawExam : null;
+    final onboarded = json['onboarded'] == true;
+    // Existing installs that already finished onboarding skip the welcome.
+    final welcomeSeen = json['welcomeSeen'] == true || onboarded;
 
     return AppSettings(
-      onboarded: json['onboarded'] == true,
+      welcomeSeen: welcomeSeen,
+      onboarded: onboarded,
       activeExamTypeId: active,
       enabledExamTypeIds: enabled,
       targetNets: targets,

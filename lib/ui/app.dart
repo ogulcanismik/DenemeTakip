@@ -1,6 +1,7 @@
 import 'package:deneme_takip/state/providers.dart';
 import 'package:deneme_takip/ui/screens/onboarding_screen.dart';
 import 'package:deneme_takip/ui/screens/shell_screen.dart';
+import 'package:deneme_takip/ui/screens/welcome_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -15,6 +16,15 @@ class DenemeApp extends ConsumerWidget {
     final exam = ref.watch(activeExamProvider);
     final ready = settings.onboarded && exam != null;
 
+    final Widget home;
+    if (!settings.welcomeSeen) {
+      home = const WelcomeScreen();
+    } else if (!ready) {
+      home = const OnboardingScreen();
+    } else {
+      home = const ShellScreen();
+    }
+
     return MaterialApp(
       title: 'Deneme Takip',
       debugShowCheckedModeBanner: false,
@@ -28,7 +38,7 @@ class DenemeApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: ready ? const ShellScreen() : const OnboardingScreen(),
+      home: home,
     );
   }
 }

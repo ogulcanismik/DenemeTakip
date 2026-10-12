@@ -108,7 +108,10 @@ class _ExamListSettingsScreenState
     final customs = settings.customExams;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sınav listesini düzenle')),
+      appBar: AppBar(
+        leading: const BackButton(),
+        title: const Text('Sınav listesini düzenle'),
+      ),
       body: AppFrame(
         maxWidth: 560,
         child: Column(

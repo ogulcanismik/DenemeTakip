@@ -67,11 +67,14 @@ abstract final class ExamMigration {
         ? active
         : (enabled.isEmpty ? null : enabled.first);
 
+    final onboarded = settings.onboarded && nextActive != null;
     return AppSettings(
-      onboarded: settings.onboarded && nextActive != null,
+      welcomeSeen: settings.welcomeSeen || onboarded,
+      onboarded: onboarded,
       activeExamTypeId: nextActive,
       enabledExamTypeIds: enabled,
       targetNets: migratedTargets,
+      formBeatStreakByExamId: settings.formBeatStreakByExamId,
       customExams: settings.customExams,
       themeMode: settings.themeMode,
     );
@@ -101,6 +104,7 @@ abstract final class ExamMigration {
   }
 
   static bool settingsNeedRewrite(AppSettings before, AppSettings after) {
+    if (before.welcomeSeen != after.welcomeSeen) return true;
     if (before.onboarded != after.onboarded) return true;
     if (before.activeExamTypeId != after.activeExamTypeId) return true;
     if (!_sameStringList(before.enabledExamTypeIds, after.enabledExamTypeIds)) {
