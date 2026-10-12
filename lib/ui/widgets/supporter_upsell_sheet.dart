@@ -1,8 +1,10 @@
+import 'package:deneme_takip/ads/billing_service.dart';
+import 'package:deneme_takip/state/providers.dart';
 import 'package:deneme_takip/ui/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Calm indie-dev note after an interstitial. Purchase CTA is a placeholder
-/// until Play Billing is wired.
+/// Calm indie-dev note after an interstitial. Purchase unlocks isSupporter.
 Future<void> showSupporterUpsellSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
@@ -12,8 +14,38 @@ Future<void> showSupporterUpsellSheet(BuildContext context) {
   );
 }
 
-class _SupporterUpsellSheet extends StatelessWidget {
+class _SupporterUpsellSheet extends ConsumerStatefulWidget {
   const _SupporterUpsellSheet();
+
+  @override
+  ConsumerState<_SupporterUpsellSheet> createState() =>
+      _SupporterUpsellSheetState();
+}
+
+class _SupporterUpsellSheetState extends ConsumerState<_SupporterUpsellSheet> {
+  var _busy = false;
+
+  Future<void> _buy() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final billing = ref.read(billingServiceProvider);
+    final result = await billing.purchaseSupporter();
+    if (!mounted) return;
+    setState(() => _busy = false);
+
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (result == BillingActionResult.success) {
+      Navigator.of(context).pop();
+      messenger?.showSnackBar(
+        SnackBar(content: Text(result.messageTr)),
+      );
+      return;
+    }
+    if (result == BillingActionResult.cancelled) return;
+    messenger?.showSnackBar(
+      SnackBar(content: Text(result.messageTr)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +53,7 @@ class _SupporterUpsellSheet extends StatelessWidget {
     // the active app theme mode.
     const colors = AppColors.dark;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final price = ref.watch(billingServiceProvider).supporterPriceLabel;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 0, 12, 12 + bottomInset),
@@ -55,7 +88,7 @@ class _SupporterUpsellSheet extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 'Denemelerine odaklanırken araya reklam girmesini istemiyorsan '
-                'tek seferlik 50 ₺ katkıyla hem reklamsız deneyime geçebilir '
+                'tek seferlik $price katkıyla hem reklamsız deneyime geçebilir '
                 'hem de uygulamanın gelişimine destek olabilirsin.',
                 style: TextStyle(
                   color: colors.textMuted,
@@ -65,29 +98,19 @@ class _SupporterUpsellSheet extends StatelessWidget {
               ),
               const SizedBox(height: 22),
               FilledButton(
-                onPressed: () {
-                  // TODO: Wire Play Billing one-time 50 ₺ purchase, then
-                  // settingsProvider.setSupporter(true).
-                  final messenger = ScaffoldMessenger.maybeOf(context);
-                  Navigator.of(context).pop();
-                  messenger?.showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Satın alma yakında. Şimdilik teşekkürler!',
-                      ),
-                    ),
-                  );
-                },
+                onPressed: _busy ? null : _buy,
                 style: FilledButton.styleFrom(
                   backgroundColor: colors.indigo,
                   foregroundColor: colors.text,
                   minimumSize: const Size(0, 48),
                 ),
-                child: const Text('50 ₺ ile Reklamları Kaldır'),
+                child: Text(
+                  _busy ? 'Satın alma açılıyor…' : '$price ile Reklamları Kaldır',
+                ),
               ),
               const SizedBox(height: 8),
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: _busy ? null : () => Navigator.of(context).pop(),
                 style: TextButton.styleFrom(
                   foregroundColor: colors.textMuted,
                   minimumSize: const Size(0, 44),

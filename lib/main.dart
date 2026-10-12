@@ -10,8 +10,9 @@ Future<void> main() async {
   final container = ProviderContainer(
     overrides: [denemeRepositoryProvider.overrideWithValue(repository)],
   );
-  // Live isSupporter via settingsProvider; failures stay inside AdService.
+  // Live isSupporter via settingsProvider; failures stay inside each service.
   await container.read(adServiceProvider).initialize();
+  await container.read(billingServiceProvider).initialize();
   runApp(
     UncontrolledProviderScope(
       container: container,

@@ -1,3 +1,4 @@
+import 'package:deneme_takip/ads/billing_service.dart';
 import 'package:deneme_takip/domain/app_settings.dart';
 import 'package:deneme_takip/domain/exam_registry.dart';
 import 'package:deneme_takip/domain/exam_type.dart';
@@ -19,6 +20,7 @@ class _ExamListSettingsScreenState
     extends ConsumerState<ExamListSettingsScreen> {
   late Set<String> _selected;
   var _saving = false;
+  var _billingBusy = false;
   String? _hint;
 
   @override
@@ -54,6 +56,30 @@ class _ExamListSettingsScreenState
       _selected.add(result.id);
       _hint = null;
     });
+  }
+
+  Future<void> _purchaseSupporter() async {
+    if (_billingBusy) return;
+    setState(() => _billingBusy = true);
+    final result =
+        await ref.read(billingServiceProvider).purchaseSupporter();
+    if (!mounted) return;
+    setState(() => _billingBusy = false);
+    if (result == BillingActionResult.cancelled) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result.messageTr)),
+    );
+  }
+
+  Future<void> _restorePurchases() async {
+    if (_billingBusy) return;
+    setState(() => _billingBusy = true);
+    final result = await ref.read(billingServiceProvider).restorePurchases();
+    if (!mounted) return;
+    setState(() => _billingBusy = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result.messageTr)),
+    );
   }
 
   Future<void> _confirmDelete(ExamType exam) async {
@@ -150,6 +176,49 @@ class _ExamListSettingsScreenState
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Destekçi',
+                    style: TextStyle(
+                      color: colors.text,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    settings.isSupporter
+                        ? 'Destekçisin — reklamlar kapalı. Teşekkürler!'
+                        : 'Tek seferlik katkıyla reklamsız deneyime geçebilir, '
+                            'uygulamanın gelişimine destek olabilirsin.',
+                    style: TextStyle(
+                      color: colors.textMuted,
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (!settings.isSupporter) ...[
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: _billingBusy ? null : _purchaseSupporter,
+                      child: Text(
+                        _billingBusy
+                            ? 'Bekleniyor…'
+                            : '${ref.watch(billingServiceProvider).supporterPriceLabel} ile Reklamları Kaldır',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _billingBusy ? null : _restorePurchases,
+                      child: const Text('Satın almayı geri yükle'),
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: _billingBusy ? null : _restorePurchases,
+                      child: const Text('Satın almayı geri yükle'),
+                    ),
+                  ],
                   const SizedBox(height: 28),
                   Text(
                     'Diğer sınavlar',

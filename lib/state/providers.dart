@@ -1,4 +1,5 @@
 import 'package:deneme_takip/ads/ad_service.dart';
+import 'package:deneme_takip/ads/billing_service.dart';
 import 'package:deneme_takip/data/hive_deneme_repository.dart';
 import 'package:deneme_takip/domain/app_settings.dart';
 import 'package:deneme_takip/domain/deneme_entry.dart';
@@ -13,6 +14,15 @@ final denemeRepositoryProvider = Provider<DenemeRepository>((ref) {
 final adServiceProvider = Provider<AdService>((ref) {
   final service = AdService(
     isSupporter: () => ref.read(settingsProvider).isSupporter,
+  );
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+final billingServiceProvider = Provider<BillingService>((ref) {
+  final service = BillingService(
+    onSupporterUnlocked: () =>
+        ref.read(settingsProvider.notifier).setSupporter(true),
   );
   ref.onDispose(service.dispose);
   return service;
@@ -95,7 +105,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     await _persist(next);
   }
 
-  /// Marks the one-time supporter unlock (ad-free). Used by billing later.
+  /// Marks the one-time supporter unlock (ad-free). Set by Play Billing.
   Future<void> setSupporter(bool value) async {
     if (state.isSupporter == value) return;
     final next = state.copyWith(isSupporter: value);
