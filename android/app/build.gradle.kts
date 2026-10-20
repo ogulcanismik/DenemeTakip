@@ -11,7 +11,7 @@ plugins {
 }
 
 // Play Console upload certificate for com.appbyOI.denemeTakip.
-val expectedUploadSha1 = "94:6F:8B:48:2A:63:0F:89:94:E9:B9:3E:8E:69:98:66:6B:2A:AE:5B"
+val expectedUploadSha1 = "69:33:DD:E8:B0:D5:9A:25:3F:2B:1F:48:E3:ED:E3:78:6D:70:87:2A"
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
