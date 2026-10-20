@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Space Grotesk for nets, KPIs, counters, and other numeric displays.
@@ -217,6 +218,16 @@ ThemeData _buildDenemeTheme(AppColors colors) {
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.transparent,
+        systemStatusBarContrastEnforced: false,
+        systemNavigationBarContrastEnforced: false,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarIconBrightness:
+            isDark ? Brightness.light : Brightness.dark,
+      ),
       titleTextStyle: GoogleFonts.nunito(
         fontSize: 20,
         fontWeight: FontWeight.w700,
