@@ -32,4 +32,4 @@ flutter test test/net_engine_test.dart
 
 ## Android release signing
 
-Release APK / App Bundle signing uses a local `android/key.properties` (gitignored) that points at your upload keystore. Do not commit `key.properties` or `*.jks` / `*.keystore`.
+Release APK / App Bundle signing uses a local `android/key.properties` (gitignored) that points at your upload keystore. Do not commit `key.properties` or `*.jks` / `*.keystore`. `flutter build appbundle` refuses to run unless that keystore's certificate SHA-1 is `94:6F:8B:48:2A:63:0F:89:94:E9:B9:3E:8E:69:98:66:6B:2A:AE:5B`.
