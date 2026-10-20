@@ -4,6 +4,7 @@ import 'package:deneme_takip/ui/screens/dashboard_screen.dart';
 import 'package:deneme_takip/ui/screens/entry_screen.dart';
 import 'package:deneme_takip/ui/screens/exam_list_settings_screen.dart';
 import 'package:deneme_takip/ui/theme.dart';
+import 'package:deneme_takip/ui/widgets/supporter_upsell_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +22,40 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   int _tab = 2;
   int _formToken = 0;
   DateTime? _lastBackAt;
+  var _openingAnaliz = false;
+
+  /// Analiz is the only ad moment: show the interstitial (and the supporter
+  /// note if one played) before switching to that tab. Other tabs switch
+  /// immediately. A failed or capped ad still opens Analiz.
+  Future<void> _selectTab(int index) async {
+    if (_openingAnaliz || index == _tab) return;
+    if (index != 1) {
+      setState(() => _tab = index);
+      return;
+    }
+
+    _openingAnaliz = true;
+    try {
+      var adWasShown = false;
+      try {
+        await ref.read(adServiceProvider).showInterstitialWithFallback(
+          onDismissed: (shown) => adWasShown = shown,
+        );
+      } on Object {
+        adWasShown = false;
+      }
+      if (!mounted) return;
+
+      if (adWasShown && !ref.read(settingsProvider).isSupporter) {
+        await showSupporterUpsellSheet(context);
+        if (!mounted) return;
+      }
+
+      setState(() => _tab = 1);
+    } finally {
+      _openingAnaliz = false;
+    }
+  }
 
   /// Root-shell back: switch to Özet first; on Özet require a quick double-back
   /// to leave the app. Nested routes above the shell still pop normally.
@@ -101,7 +136,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
         bottomNavigationBar: NavigationBar(
           selectedIndex: _tab,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          onDestinationSelected: (index) => setState(() => _tab = index),
+          onDestinationSelected: (index) {
+            _selectTab(index);
+          },
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.insights_outlined),
