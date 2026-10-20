@@ -65,6 +65,10 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }
@@ -138,5 +142,10 @@ flutter {
 }
 
 dependencies {
-    implementation("androidx.activity:activity-ktx:1.9.3")
+    implementation("androidx.core:core-ktx:1.15.0")
+    // google_mobile_ads pulls WorkManager 2.7.0. R8 then removes the Room
+    // class WorkManager constructs at startup, so release builds die in
+    // InitializationProvider before the first frame. 2.11.2 ships rules that
+    // survive that shrinker.
+    implementation("androidx.work:work-runtime:2.11.2")
 }
