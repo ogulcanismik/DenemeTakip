@@ -10,7 +10,6 @@ import 'package:deneme_takip/ui/turkish_date.dart';
 import 'package:deneme_takip/ui/widgets/count_field.dart';
 import 'package:deneme_takip/ui/widgets/form_beat_celebration.dart';
 import 'package:deneme_takip/ui/widgets/hedef_confetti.dart';
-import 'package:deneme_takip/ui/widgets/supporter_upsell_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -217,22 +216,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       }
       if (showFormBeat) {
         await celebrateFormBeat(context, streak: formStreak);
-        if (!mounted) return;
-      }
-
-      // Save already succeeded — ads/upsell must never block Özet.
-      var adWasShown = false;
-      try {
-        await ref.read(adServiceProvider).showInterstitialWithFallback(
-          onDismissed: (shown) => adWasShown = shown,
-        );
-      } on Object {
-        adWasShown = false;
-      }
-      if (!mounted) return;
-
-      if (adWasShown && !ref.read(settingsProvider).isSupporter) {
-        await showSupporterUpsellSheet(context);
         if (!mounted) return;
       }
 
