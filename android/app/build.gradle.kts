@@ -1,11 +1,17 @@
-import java.util.Properties
+import java.io.File
 import java.io.FileInputStream
+import java.security.KeyStore
+import java.security.MessageDigest
+import java.util.Properties
 
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Play Console upload certificate for com.appbyOI.denemeTakip.
+val expectedUploadSha1 = "94:6F:8B:48:2A:63:0F:89:94:E9:B9:3E:8E:69:98:66:6B:2A:AE:5B"
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
@@ -52,7 +58,8 @@ android {
     buildTypes {
         release {
             // Signed Play builds need android/key.properties; otherwise use debug so local
-            // checkouts without a keystore still configure/build.
+            // checkouts without a keystore still configure/build. bundleRelease still
+            // refuses that fallback and checks the upload certificate below.
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
@@ -60,6 +67,64 @@ android {
             }
         }
     }
+}
+
+tasks.configureEach {
+    if (name != "bundleRelease" && name != "signReleaseBundle") return@configureEach
+    doFirst {
+        verifyPlayUploadCertificate()
+    }
+}
+
+fun verifyPlayUploadCertificate() {
+    if (!keystorePropertiesFile.exists()) {
+        throw GradleException(
+            "Play App Bundle requires android/key.properties. " +
+                "The upload certificate SHA-1 must be $expectedUploadSha1.",
+        )
+    }
+
+    val storePath = keystoreProperties.getProperty("storeFile")
+        ?: throw GradleException("key.properties is missing storeFile.")
+    val storePassword = keystoreProperties.getProperty("storePassword")
+        ?: throw GradleException("key.properties is missing storePassword.")
+    val alias = keystoreProperties.getProperty("keyAlias")
+        ?: throw GradleException("key.properties is missing keyAlias.")
+    val storeFile = file(storePath)
+    if (!storeFile.isFile) {
+        throw GradleException("Upload keystore not found at ${storeFile.path}.")
+    }
+
+    val store = loadKeyStore(storeFile, storePassword.toCharArray())
+    val cert = store.getCertificate(alias)
+        ?: throw GradleException("Keystore has no certificate for alias $alias.")
+    val actual = sha1Fingerprint(cert.encoded)
+    if (!actual.equals(expectedUploadSha1, ignoreCase = true)) {
+        throw GradleException(
+            "Upload certificate SHA-1 is $actual, required $expectedUploadSha1.",
+        )
+    }
+}
+
+fun loadKeyStore(storeFile: File, password: CharArray): KeyStore {
+    var lastError: Exception? = null
+    for (type in listOf("PKCS12", "JKS")) {
+        try {
+            val store = KeyStore.getInstance(type)
+            FileInputStream(storeFile).use { store.load(it, password) }
+            return store
+        } catch (error: Exception) {
+            lastError = error
+        }
+    }
+    throw GradleException(
+        "Could not read the upload keystore: ${lastError?.message ?: "unknown error"}",
+    )
+}
+
+fun sha1Fingerprint(encodedCertificate: ByteArray): String {
+    val digest = MessageDigest.getInstance("SHA-1").digest(encodedCertificate)
+    return digest.joinToString(":") { "%02X".format(it) }
 }
 
 kotlin {
